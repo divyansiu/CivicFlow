@@ -12,6 +12,8 @@ def test_dashboard_success():
     assert response.status_code == 200
     data = response.json()
     assert "total_assets" in data
+    assert "in_progress_count" in data
+    assert "completed_work_count" in data
     assert "critical_risk_count" in data
     assert "high_risk_count" in data
     assert "medium_risk_count" in data
@@ -20,6 +22,8 @@ def test_dashboard_success():
     assert "risk_distribution" in data
     assert "asset_type_breakdown" in data
     assert data["total_assets"] >= 0
+    assert data["in_progress_count"] >= 0
+    assert data["completed_work_count"] >= 0
     assert "top_priority_asset" in data
 
 

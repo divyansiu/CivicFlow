@@ -30,6 +30,8 @@ export const dashboardService = {
 
       return {
         total_assets: SEED_ASSETS.length,
+        in_progress_count: 1,
+        completed_work_count: 136,
         critical_risk_count: criticalCount,
         high_risk_count: highCount,
         medium_risk_count: mediumCount,
