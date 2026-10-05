@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Building2, 
   MapPin, 
@@ -21,8 +21,12 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { DataTable } from '../components/ui/DataTable';
 import { AssetDetails } from '../components/assets/AssetDetails';
 import { SEED_ASSETS, MOCK_CITIZEN_COMPLAINTS } from '../data/mockData';
+import assetService from '../services/assetService';
+import dashboardService from '../services/dashboardService';
 
 export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
+  const [assets, setAssets] = useState(SEED_ASSETS);
+  const [metrics, setMetrics] = useState(null);
   const [complaints, setComplaints] = useState(MOCK_CITIZEN_COMPLAINTS);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -30,8 +34,37 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
   const [newCategory, setNewCategory] = useState('Pothole / Road Depression');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAssetId, setSelectedAssetId] = useState(null);
+  const [isLive, setIsLive] = useState(false);
 
-  const topAsset = SEED_ASSETS[0]; // Priority #1
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      assetService.getPriorities(20),
+      dashboardService.getDashboardSummary()
+    ]).then(([pRes, dRes]) => {
+      if (!mounted) return;
+      if (pRes.items && pRes.items.length > 0) {
+        setAssets(pRes.items);
+      }
+      setMetrics(dRes);
+      setIsLive(Boolean(pRes.isLive || dRes.isLive));
+    }).catch(err => {
+      console.warn('Fallback to seed assets in user dashboard:', err);
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  const topAsset = assets[0] || SEED_ASSETS[0];
+
+  const lowCount = metrics?.risk_distribution?.LOW ?? assets.filter(a => a.risk_level === 'LOW').length;
+  const medCount = metrics?.risk_distribution?.MEDIUM ?? assets.filter(a => a.risk_level === 'MEDIUM').length;
+  const highCritCount = metrics
+    ? ((metrics.risk_distribution?.HIGH || 0) + (metrics.risk_distribution?.CRITICAL || 0))
+    : assets.filter(a => a.risk_level === 'HIGH' || a.risk_level === 'CRITICAL').length;
+  const totalCount = metrics?.total_assets || assets.length || 1;
+  const healthyPercent = Math.round((lowCount / totalCount) * 100);
+  const maintenancePercent = Math.round((medCount / totalCount) * 100);
+  const repairPercent = Math.max(0, 100 - healthyPercent - maintenancePercent);
 
   const handleUpvote = (id) => {
     setComplaints(complaints.map(c => c.id === id ? { ...c, upvotes: c.upvotes + 1 } : c));
@@ -160,9 +193,26 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <MetricPanel label="In Progress" value="18" subtext="Active repair crews" indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />} />
-          <MetricPanel label="Scheduled" value="12 Sites" subtext="Upcoming works this week" indicator={<span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />} />
-          <MetricPanel label="Resolved" value="48 Issues" subtext="Completed this month" indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />} />
+          <MetricPanel
+            label="In Progress"
+            value={metrics?.under_maintenance_count !== undefined
+              ? metrics.under_maintenance_count
+              : assets.filter(a => a.status === 'UNDER_MAINTENANCE').length}
+            subtext="Active repair crews"
+            indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />}
+          />
+          <MetricPanel
+            label="Scheduled"
+            value={`${highCritCount} Sites`}
+            subtext="Pending priority intervention"
+            indicator={<span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" />}
+          />
+          <MetricPanel
+            label="Resolved"
+            value={`${complaints.filter(c => c.status === 'Resolved' || c.status === 'RESOLVED').length} Issues`}
+            subtext="Closed community reports"
+            indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
+          />
         </div>
 
         <div className="gov-card p-5 space-y-3">
@@ -257,10 +307,26 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
 
       {/* 4 Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <MetricPanel label="Total Assets" value="842" subtext="Roads, lights & parks" />
-        <MetricPanel label="Issues Reported" value={complaints.length} subtext="Active community complaints" />
-        <MetricPanel label="Under Maintenance" value="12 Sites" subtext="Repairs in progress" />
-        <MetricPanel label="Resolved" value="48 Issues" subtext="Completed this month" />
+        <MetricPanel
+          label="Total Assets"
+          value={metrics ? metrics.total_assets : assets.length}
+          subtext="Roads, lights & infrastructure"
+        />
+        <MetricPanel
+          label="Issues Reported"
+          value={complaints.length}
+          subtext="Active community complaints"
+        />
+        <MetricPanel
+          label="Under Maintenance"
+          value={`${metrics?.under_maintenance_count ?? assets.filter(a => a.status === 'UNDER_MAINTENANCE').length} Sites`}
+          subtext="Repairs in progress"
+        />
+        <MetricPanel
+          label="Resolved"
+          value={`${complaints.filter(c => c.status === 'Resolved' || c.status === 'RESOLVED').length} Issues`}
+          subtext="Closed community reports"
+        />
       </div>
 
       {/* Top Priority Alert */}
@@ -306,31 +372,31 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
             <div className="space-y-3 text-xs">
               <div>
                 <div className="flex justify-between text-[#1A1A1A] font-medium mb-1">
-                  <span>Healthy &amp; Good Condition</span>
-                  <span className="text-[#168A44] font-semibold">68%</span>
+                  <span>Healthy &amp; Good Condition (Low Risk)</span>
+                  <span className="text-[#168A44] font-semibold">{healthyPercent}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded h-2 overflow-hidden">
-                  <div className="bg-[#168A44] h-2 rounded" style={{ width: '68%' }}></div>
+                  <div className="bg-[#168A44] h-2 rounded transition-all duration-300" style={{ width: `${healthyPercent}%` }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-[#1A1A1A] font-medium mb-1">
-                  <span>Regular Maintenance Scheduled</span>
-                  <span className="text-orange-600 font-semibold">22%</span>
+                  <span>Regular Maintenance (Medium Risk)</span>
+                  <span className="text-orange-600 font-semibold">{maintenancePercent}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded h-2 overflow-hidden">
-                  <div className="bg-orange-500 h-2 rounded" style={{ width: '22%' }}></div>
+                  <div className="bg-orange-500 h-2 rounded transition-all duration-300" style={{ width: `${maintenancePercent}%` }}></div>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-[#1A1A1A] font-medium mb-1">
-                  <span>Needs Inspection / Repair</span>
-                  <span className="text-red-600 font-semibold">10%</span>
+                  <span>Needs Inspection / Repair (High &amp; Critical)</span>
+                  <span className="text-red-600 font-semibold">{repairPercent}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded h-2 overflow-hidden">
-                  <div className="bg-red-500 h-2 rounded" style={{ width: '10%' }}></div>
+                  <div className="bg-red-500 h-2 rounded transition-all duration-300" style={{ width: `${repairPercent}%` }}></div>
                 </div>
               </div>
             </div>

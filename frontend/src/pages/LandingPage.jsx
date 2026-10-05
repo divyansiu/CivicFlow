@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, 
   MapPin, 
@@ -14,9 +14,39 @@ import {
 import { Button } from '../components/ui/Button';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { SEED_ASSETS } from '../data/mockData';
+import assetService from '../services/assetService';
 
 export const LandingPage = ({ onExploreDashboard }) => {
-  const topAsset = SEED_ASSETS[0];
+  const [topAsset, setTopAsset] = useState(SEED_ASSETS[0]);
+  const [counts, setCounts] = useState({
+    roads: 'Monitored',
+    bridges: 'Monitored',
+    streetlights: 'Monitored',
+  });
+
+  useEffect(() => {
+    let mounted = true;
+    Promise.all([
+      assetService.getPriorities(1),
+      assetService.getAssets()
+    ]).then(([pRes, aRes]) => {
+      if (!mounted) return;
+      if (pRes.items && pRes.items.length > 0) {
+        setTopAsset(pRes.items[0]);
+      }
+      if (aRes.items && aRes.items.length > 0) {
+        const roadCount = aRes.items.filter(a => a.asset_type === 'road').length;
+        const bridgeCount = aRes.items.filter(a => a.asset_type?.startsWith('bridge')).length;
+        const lightCount = aRes.items.filter(a => a.asset_type?.startsWith('streetlight')).length;
+        setCounts({
+          roads: `${roadCount} Segments`,
+          bridges: `${bridgeCount} Spans`,
+          streetlights: `${lightCount} Arrays`,
+        });
+      }
+    }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F8FA] text-[#1A1A1A]">
@@ -192,9 +222,9 @@ export const LandingPage = ({ onExploreDashboard }) => {
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {[
-              { name: 'Roads', icon: Building, count: '842 Assets', status: 'Active' },
-              { name: 'Bridges', icon: Building2, count: '34 Spans', status: 'Monitored' },
-              { name: 'Streetlights', icon: Lightbulb, count: '128 Arrays', status: 'Active' },
+              { name: 'Roads', icon: Building, count: counts.roads, status: 'Active' },
+              { name: 'Bridges', icon: Building2, count: counts.bridges, status: 'Monitored' },
+              { name: 'Streetlights', icon: Lightbulb, count: counts.streetlights, status: 'Active' },
               { name: 'Water Systems', icon: Droplets, count: '62 Lines', status: 'Planned' },
               { name: 'Public Buildings', icon: Building2, count: '45 Facilities', status: 'Monitored' },
               { name: 'Drainage', icon: Waves, count: '88 Channels', status: 'Monitored' }

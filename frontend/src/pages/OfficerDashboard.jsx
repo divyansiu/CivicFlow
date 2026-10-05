@@ -26,7 +26,7 @@ import { StatusBadge } from '../components/ui/StatusBadge';
 import { Button } from '../components/ui/Button';
 import { RiskDistribution } from '../components/dashboard/RiskDistribution';
 import { RiskChart } from '../components/dashboard/RiskChart';
-import { SEED_ASSETS, MOCK_SYSTEM_METRICS, MOCK_OFFICERS, MOCK_CITIZEN_COMPLAINTS } from '../data/mockData';
+import { SEED_ASSETS, MOCK_CITIZEN_COMPLAINTS } from '../data/mockData';
 import assetService from '../services/assetService';
 import dashboardService from '../services/dashboardService';
 import predictionService from '../services/predictionService';
@@ -35,6 +35,7 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
   const [assets, setAssets] = useState(SEED_ASSETS);
   const [selectedAssetId, setSelectedAssetId] = useState('RD-021');
   const [metrics, setMetrics] = useState(null);
+  const [complaints, setComplaints] = useState(MOCK_CITIZEN_COMPLAINTS);
   const [selectedAssetDetail, setSelectedAssetDetail] = useState(null);
   const [notice, setNotice] = useState(null);
   const [isLive, setIsLive] = useState(false);
@@ -257,9 +258,19 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <MetricPanel label="Total Reports" value={MOCK_CITIZEN_COMPLAINTS.length} subtext="Catalogued citizen inputs" />
-          <MetricPanel label="Pending Action" value="2" subtext="Scheduled for field visit" indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />} />
-          <MetricPanel label="Resolved" value="1" subtext="Closed after verification" indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />} />
+          <MetricPanel label="Total Reports" value={complaints.length} subtext="Catalogued citizen inputs" />
+          <MetricPanel
+            label="Pending Action"
+            value={complaints.filter(c => c.status !== 'Resolved' && c.status !== 'RESOLVED').length}
+            subtext="Scheduled for field visit"
+            indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />}
+          />
+          <MetricPanel
+            label="Resolved"
+            value={complaints.filter(c => c.status === 'Resolved' || c.status === 'RESOLVED').length}
+            subtext="Closed after verification"
+            indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
+          />
         </div>
 
         <div className="gov-card p-4 sm:p-5">
@@ -278,7 +289,7 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
               { header: 'CITIZEN', accessor: 'citizen_name', cellClassName: 'text-xs text-[#5F6368]' },
               { header: 'SUBMITTED', accessor: 'submitted_at', cellClassName: 'font-mono text-[11px] text-[#5F6368]' }
             ]}
-            data={MOCK_CITIZEN_COMPLAINTS}
+            data={complaints}
             emptyMessage="No complaints recorded."
           />
         </div>
@@ -351,13 +362,17 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
         />
         <MetricPanel
           label="Average Condition"
-          value={metrics ? `${metrics.average_condition_score}/100` : '51.5/100'}
+          value={metrics?.average_condition_score !== undefined
+            ? `${metrics.average_condition_score}/100`
+            : `${Math.round(assets.reduce((sum, a) => sum + (a.condition_score || 0), 0) / (assets.length || 1))}/100`}
           subtext="Structural condition score"
           indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />}
         />
         <MetricPanel
           label="Average Priority"
-          value={metrics ? `${metrics.average_priority_score}` : '64.2'}
+          value={metrics?.average_priority_score !== undefined
+            ? `${metrics.average_priority_score}`
+            : (assets.reduce((sum, a) => sum + (a.priority_score || 0), 0) / (assets.length || 1)).toFixed(1)}
           subtext="Composite priority index"
           indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
         />
