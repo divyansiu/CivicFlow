@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 [
+=======
+﻿[
+>>>>>>> 858da7f1acd2b6b7fed6a35cd0b72067f1414670
   {
     "asset_id": "RD-0001",
     "asset_type": "road",
@@ -1139,4 +1143,8 @@
     "criticality": "HIGH",
     "status": "ACTIVE"
   }
+<<<<<<< HEAD
 ]
+=======
+]
+>>>>>>> 858da7f1acd2b6b7fed6a35cd0b72067f1414670

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 [
+=======
+﻿[
+>>>>>>> 858da7f1acd2b6b7fed6a35cd0b72067f1414670
   {
     "maintenance_id": "MNT-0001",
     "asset_id": "RD-0001",
@@ -1223,4 +1227,8 @@
     "cost": 86528,
     "downtime_days": 3
   }
+<<<<<<< HEAD
 ]
+=======
+]
+>>>>>>> 858da7f1acd2b6b7fed6a35cd0b72067f1414670
