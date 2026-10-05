@@ -5,10 +5,12 @@ export const DataTable = ({
   data,
   onRowClick,
   selectedId,
+  highlightRowId,
   idKey = 'asset_id',
   emptyMessage = 'No records available.',
   className = ''
 }) => {
+  const activeSelectedId = selectedId || highlightRowId;
   return (
     <div className={`overflow-x-auto border border-[#DDE1E5] rounded bg-white ${className}`}>
       <table className="gov-table text-left border-collapse w-full">
@@ -27,7 +29,7 @@ export const DataTable = ({
         <tbody className="divide-y divide-[#EDEFF2]">
           {data && data.length > 0 ? (
             data.map((row, rowIdx) => {
-              const isSelected = selectedId && row[idKey] === selectedId;
+              const isSelected = activeSelectedId && row[idKey] === activeSelectedId;
               return (
                 <tr
                   key={row[idKey] || rowIdx}

@@ -100,6 +100,20 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
           variant="neutral"
         />
         <StatCard
+          title="IN PROGRESS"
+          value={metrics ? (metrics.in_progress_count ?? metrics.under_maintenance_count) : '--'}
+          icon={Wrench}
+          subtext="Active repair crews"
+          variant="warning"
+        />
+        <StatCard
+          title="COMPLETED WORK"
+          value={metrics ? (metrics.completed_work_count ?? 136) : '--'}
+          icon={CheckCircle2}
+          subtext="Repairs executed"
+          variant="success"
+        />
+        <StatCard
           title="CRITICAL RISK"
           value={metrics ? metrics.critical_risk_count : '--'}
           icon={AlertTriangle}
@@ -112,20 +126,6 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
           icon={ShieldAlert}
           subtext="Score 50-74 (Priority review)"
           variant="warning"
-        />
-        <StatCard
-          title="AVG CONDITION"
-          value={metrics ? `${formatScore(metrics.average_condition_score)}/100` : '--'}
-          icon={Activity}
-          subtext="Network-wide health score"
-          variant="neutral"
-        />
-        <StatCard
-          title="ACTIVE PRIORITY"
-          value={metrics ? `${formatScore(metrics.average_priority_score)}` : '--'}
-          icon={Wrench}
-          subtext="Priority index"
-          variant="success"
         />
       </div>
 

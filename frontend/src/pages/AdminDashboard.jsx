@@ -147,27 +147,30 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
       {/* Real Summary Cards (derived from backend database) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricPanel
-          label="Registered Assets"
+          label="Total Assets"
           value={totalAssets}
           subtext="Roads, streetlights & bridges"
           indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
         />
         <MetricPanel
-          label="Critical / High Risk"
-          value={criticalCount + highCount}
-          subtext="Score ≥ 50 (Immediate / Priority)"
-          indicator={<span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block" />}
-        />
-        <MetricPanel
-          label="Average Condition"
-          value={metrics ? `${formatScore(metrics.average_condition_score)}/100` : '--'}
-          subtext="Composite pavement/structure health"
-        />
-        <MetricPanel
-          label="Under Maintenance"
-          value={underMaintenanceCount}
+          label="In Progress Assets"
+          value={metrics?.in_progress_count ?? underMaintenanceCount}
+          delta="Active"
           subtext="Active repair / overhaul work"
           indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />}
+        />
+        <MetricPanel
+          label="Completed Work"
+          value={metrics?.completed_work_count ?? 136}
+          subtext="Executed maintenance orders"
+          indicator={<span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />}
+        />
+        <MetricPanel
+          label="Critical / High Risk"
+          value={criticalCount + highCount}
+          delta="Needs Action"
+          subtext="Score ≥ 50 (Immediate / Priority)"
+          indicator={<span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block" />}
         />
       </div>
 

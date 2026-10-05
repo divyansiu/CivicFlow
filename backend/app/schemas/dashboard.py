@@ -17,6 +17,8 @@ class DashboardResponse(BaseModel):
     medium_risk_count: int = Field(..., ge=0, description="Count of assets in MEDIUM risk band")
     low_risk_count: int = Field(..., ge=0, description="Count of assets in LOW risk band")
     under_maintenance_count: int = Field(default=0, ge=0, description="Count of assets currently under maintenance")
+    in_progress_count: int = Field(default=0, ge=0, description="Count of assets currently under repair or maintenance")
+    completed_work_count: int = Field(default=0, ge=0, description="Total completed maintenance and repair work orders")
     average_condition_score: float = Field(..., ge=0.0, le=100.0, description="Network-wide average condition score")
     average_priority_score: float = Field(default=0.0, ge=0.0, le=100.0, description="Network-wide average priority score")
     risk_distribution: RiskDistribution = Field(..., description="Distribution breakdown across risk bands")

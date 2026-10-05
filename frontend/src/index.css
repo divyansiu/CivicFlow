@@ -10,6 +10,16 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  ::selection {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+  }
+
+  ::-moz-selection {
+    background-color: #2563eb !important;
+    color: #ffffff !important;
+  }
+
   /* Clean subtle scrollbar */
   ::-webkit-scrollbar {
     width: 6px;

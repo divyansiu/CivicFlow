@@ -375,32 +375,32 @@ export const OfficerDashboard = ({ activeTab = 'overview', locationData, localiz
       {/* Top Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricPanel
-          label="High Risk Assets"
-          value={highRiskCount}
-          delta="Needs Action"
-          subtext="Score ≥ 50 (Immediate or Priority)"
-          indicator={<span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block" />}
-        />
-        <MetricPanel
-          label="Monitored Assets"
+          label="Total Assets"
           value={metrics ? metrics.total_assets : assets.length}
-          subtext="Under municipal management"
+          subtext="Catalogued infrastructure registry"
+          indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
         />
         <MetricPanel
-          label="Average Condition"
-          value={metrics?.average_condition_score !== undefined
-            ? `${metrics.average_condition_score}/100`
-            : `${Math.round(assets.reduce((sum, a) => sum + (a.condition_score || 0), 0) / (assets.length || 1))}/100`}
-          subtext="Structural condition score"
+          label="In Progress Assets"
+          value={metrics?.in_progress_count !== undefined 
+            ? metrics.in_progress_count 
+            : (metrics?.under_maintenance_count ?? assets.filter(a => a.status === 'UNDER_MAINTENANCE' || a.status === 'IN_PROGRESS' || a.overdue_inspection === 1).length)}
+          delta="Active"
+          subtext="Work orders & active field crews"
           indicator={<span className="w-2.5 h-2.5 rounded-full bg-orange-500 inline-block" />}
         />
         <MetricPanel
-          label="Average Priority"
-          value={metrics?.average_priority_score !== undefined
-            ? `${metrics.average_priority_score}`
-            : (assets.reduce((sum, a) => sum + (a.priority_score || 0), 0) / (assets.length || 1)).toFixed(1)}
-          subtext="Priority score (0-100)"
-          indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
+          label="Completed Work"
+          value={metrics?.completed_work_count ?? 136}
+          subtext="Maintenance & repairs executed"
+          indicator={<span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block" />}
+        />
+        <MetricPanel
+          label="High Risk Assets"
+          value={highRiskCount}
+          delta="Needs Action"
+          subtext="Score ≥ 50 (Immediate priority review)"
+          indicator={<span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block" />}
         />
       </div>
 

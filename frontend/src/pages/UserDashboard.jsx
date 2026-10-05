@@ -606,7 +606,7 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview', locationD
           }
         />
         <MetricPanel
-          label="Under Maintenance"
+          label="In Progress Assets"
           value={`${underMaintenanceCount} Sites`}
           subtext={
             issuesFilterWard === 'ALL'
@@ -617,11 +617,11 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview', locationD
           }
         />
         <MetricPanel
-          label="Resolved"
-          value={`${resolvedIssuesCount} Issues`}
+          label="Completed Work"
+          value={metrics?.completed_work_count ?? `${resolvedIssuesCount} Issues`}
           subtext={
             issuesFilterWard === 'ALL'
-              ? "Closed community reports"
+              ? "Closed repairs & work orders"
               : issuesFilterWard === 'NEAR_2KM' || issuesFilterWard === 'NEAR_5KM'
               ? "Resolved in vicinity"
               : `Closed in ${activeWards.find(w => w.id === issuesFilterWard)?.shortLabel || issuesFilterWard}`
