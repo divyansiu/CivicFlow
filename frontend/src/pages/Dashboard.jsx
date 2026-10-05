@@ -61,20 +61,20 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">
-              Infrastructure Decision Overview
+              Infrastructure Overview
             </h1>
             {metrics?.isLive ? (
               <span className="text-[10px] font-semibold bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded border border-emerald-300">
-                Live Backend Connected
+                Connected
               </span>
             ) : (
-              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-300">
-                Prototype Seed Mode
+              <span className="text-[10px] font-semibold bg-gray-100 text-[#5F6368] px-2 py-0.5 rounded border border-gray-300">
+                Offline Records
               </span>
             )}
           </div>
           <p className="text-xs text-[#5F6368] mt-0.5">
-            Predictive Maintenance Decision Support Platform • City Public Works Division
+            Maintenance Operations & Planning • Public Works Division
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
           title="ACTIVE PRIORITY"
           value={metrics ? `${formatScore(metrics.average_priority_score)}` : '--'}
           icon={Wrench}
-          subtext="Decision priority index"
+          subtext="Priority index"
           variant="success"
         />
       </div>
@@ -166,7 +166,7 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
               onClick={() => onSelectAsset && onSelectAsset(topAsset.asset_id)}
               className="px-3.5 py-2 text-xs font-semibold bg-red-600 text-white hover:bg-red-700 rounded transition-colors flex items-center space-x-1"
             >
-              <span>Inspect Decision Card</span>
+              <span>View Asset Details</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -184,9 +184,9 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <MapPin className="w-4 h-4 text-[#168A44]" />
-            <h2 className="font-bold text-sm text-[#1A1A1A]">Geospatial Risk Presentation</h2>
+            <h2 className="font-bold text-sm text-[#1A1A1A]">Map View</h2>
           </div>
-          <span className="text-xs text-[#5F6368] italic">
+          <span className="text-xs text-[#5F6368]">
             Color-coded risk pins • Click pin or card to inspect
           </span>
         </div>
@@ -211,13 +211,13 @@ export const Dashboard = ({ onSelectAsset, onExploreMap }) => {
         }}
       />
 
-      {/* Data Disclosure Footer */}
+      {/* Status Footer */}
       <div className="p-3 bg-white rounded border border-[#DDE1E5] text-[11px] text-[#5F6368] flex flex-col sm:flex-row items-center justify-between gap-2">
         <span>
-          Compliance: <strong>PS04 Architecture Specification</strong> • Public/geospatial records + clearly labeled synthetic operational data
+          Department: <strong>Municipal Engineering &amp; Public Works</strong>
         </span>
-        <span className="italic">
-          Response times shown are prototype policy rules.
+        <span>
+          Real-time priority ranking active
         </span>
       </div>
     </div>

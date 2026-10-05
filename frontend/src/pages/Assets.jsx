@@ -32,11 +32,11 @@ export const Assets = ({ onSelectAsset }) => {
             </h1>
             {isLive ? (
               <span className="text-[10px] font-semibold bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded border border-emerald-300">
-                Live API
+                Connected
               </span>
             ) : (
-              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-300">
-                Prototype Seed
+              <span className="text-[10px] font-semibold bg-gray-100 text-[#5F6368] px-2 py-0.5 rounded border border-gray-300">
+                Offline Records
               </span>
             )}
           </div>

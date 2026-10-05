@@ -40,8 +40,7 @@ export const Footer = () => {
               Platform Access
             </h4>
             <ul className="space-y-1.5 text-[#5F6368] text-xs">
-              <li>Citizen Community Portal</li>
-              <li>Engineering Officer Operations</li>
+              <li>Field Engineering Operations</li>
               <li>Department Administration</li>
             </ul>
           </div>
@@ -52,7 +51,7 @@ export const Footer = () => {
               Assistance & Transparency
             </h4>
             <p className="text-xs leading-relaxed text-[#5F6368]">
-              Prototype demonstration for public infrastructure management. All shown metrics represent benchmark planning samples.
+              Municipal Engineering & Public Works Division. Dedicated to transparent maintenance planning and rapid fault resolution.
             </p>
           </div>
         </div>

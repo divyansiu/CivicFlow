@@ -94,20 +94,20 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">
-              System Administration &amp; Governance
+              System Administration
             </h1>
             {isLive ? (
               <span className="text-[10px] bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded font-semibold border border-emerald-300">
-                Live Backend API
+                Connected
               </span>
             ) : (
-              <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold border border-amber-300">
-                Seed Data Cache
+              <span className="text-[10px] bg-gray-100 text-[#5F6368] px-2 py-0.5 rounded font-semibold border border-[#DDE1E5]">
+                Operational
               </span>
             )}
           </div>
           <p className="text-xs text-[#5F6368] mt-0.5">
-            Real-time infrastructure management, algorithm parameter calibration, and audit registry.
+            Infrastructure management, priority formula settings, and department overview.
           </p>
         </div>
 
@@ -131,7 +131,7 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
             size="sm"
             onClick={() => setActiveTab('settings')}
           >
-            Algorithm Calibration
+            Formula Settings
           </Button>
           <button
             onClick={loadData}
@@ -199,21 +199,21 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
           />
         </div>
       ) : activeTab === 'settings' ? (
-        /* Algorithm Calibration Panel */
+        /* Priority Formula Settings Panel */
         <div className="gov-card p-4 sm:p-6 space-y-6">
           <div className="border-b border-[#DDE1E5] pb-3">
             <h2 className="text-sm font-bold text-[#1A1A1A]">
-              Decision Engine Weight Calibration
+              Priority Formula Weights
             </h2>
             <p className="text-xs text-[#5F6368] mt-0.5">
-              Tune how the platform computes the composite Priority Score. Configurable prototype parameters.
+              Adjust the formula weights used to calculate the Priority Score for infrastructure maintenance.
             </p>
           </div>
 
           <form onSubmit={handleSave} className="space-y-5 max-w-xl">
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
-                <label className="text-[#1A1A1A]">1. Predictive Risk Weight (W_risk):</label>
+                <label className="text-[#1A1A1A]">1. Condition Risk Weight:</label>
                 <span className="text-[#168A44]">{riskWeight}%</span>
               </div>
               <input
@@ -225,13 +225,13 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
                 className="w-full accent-[#168A44]"
               />
               <span className="text-[11px] text-[#5F6368] block">
-                Model-estimated probability of near-term failure/deterioration.
+                Estimated likelihood of road surface wear or structural damage.
               </span>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
-                <label className="text-[#1A1A1A]">2. Operational Urgency Weight (W_urgency):</label>
+                <label className="text-[#1A1A1A]">2. Urgency Weight:</label>
                 <span className="text-[#168A44]">{urgencyWeight}%</span>
               </div>
               <input
@@ -243,13 +243,13 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
                 className="w-full accent-[#168A44]"
               />
               <span className="text-[11px] text-[#5F6368] block">
-                Complaint spikes, recent repair history, and environmental rainfall exposure.
+                Citizen reports, recent repairs, and weather exposure.
               </span>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
-                <label className="text-[#1A1A1A]">3. Public Consequence Impact Weight (W_impact):</label>
+                <label className="text-[#1A1A1A]">3. Traffic &amp; Impact Weight:</label>
                 <span className="text-[#168A44]">{impactWeight}%</span>
               </div>
               <input
@@ -261,7 +261,7 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
                 className="w-full accent-[#168A44]"
               />
               <span className="text-[11px] text-[#5F6368] block">
-                Evaluates vehicular traffic PCU and road/bridge public criticality.
+                Daily traffic volume and road importance.
               </span>
             </div>
 
@@ -270,19 +270,19 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
               <div className="font-mono text-[#168A44]">
                 Priority = ({(riskWeight / 100).toFixed(2)} × Risk) + ({(urgencyWeight / 100).toFixed(2)} × Urgency) + ({(impactWeight / 100).toFixed(2)} × Impact)
               </div>
-              <div className="text-[10px] text-[#5F6368] italic">
-                * Default baseline PRD weights: 0.50 Risk + 0.25 Urgency + 0.25 Impact
+              <div className="text-[10px] text-[#5F6368]">
+                Baseline formula: 50% Condition Risk + 25% Urgency + 25% Traffic Impact
               </div>
             </div>
 
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Button type="submit" variant="primary" size="md">
-                Save Parameter Calibration
+                Save Formula Settings
               </Button>
               {saveNotice && (
                 <span className="text-xs text-[#168A44] font-medium flex items-center space-x-1">
                   <CheckCircle className="w-4 h-4" />
-                  <span>Parameters updated successfully.</span>
+                  <span>Formula updated successfully.</span>
                 </span>
               )}
             </div>
@@ -296,33 +296,33 @@ export const AdminDashboard = ({ activeTab: sidebarTab = 'overview' }) => {
             <RiskChart distribution={metrics?.risk_distribution} />
           </div>
 
-          {/* Real Interventions Table from Backend */}
+          {/* Maintenance Work Orders Table */}
           <div className="gov-card p-4 sm:p-5 space-y-3">
             <div className="flex items-center justify-between border-b border-[#DDE1E5] pb-2">
               <h3 className="text-sm font-bold text-[#1A1A1A]">
-                Recent Municipal Maintenance Interventions
+                Recent Maintenance Work Orders
               </h3>
               <span className="text-xs text-[#5F6368]">
-                {recentInterventions.length > 0 ? `${recentInterventions.length} records logged` : 'Operational log'}
+                {recentInterventions.length > 0 ? `${recentInterventions.length} orders recorded` : 'Work orders'}
               </span>
             </div>
 
             {recentInterventions.length > 0 ? (
               <DataTable
                 columns={[
-                  { header: 'RECORD ID', accessor: 'maintenance_id', cellClassName: 'font-mono text-xs font-bold text-[#168A44]' },
+                  { header: 'WORK ORDER ID', accessor: 'maintenance_id', cellClassName: 'font-mono text-xs font-bold text-[#168A44]' },
                   { header: 'ASSET ID', accessor: 'asset_id', cellClassName: 'font-mono text-xs text-[#5F6368]' },
-                  { header: 'INTERVENTION TYPE', accessor: 'type', cellClassName: 'font-semibold text-xs text-[#1A1A1A]' },
+                  { header: 'REPAIR TYPE', accessor: 'type', cellClassName: 'font-semibold text-xs text-[#1A1A1A]' },
                   { header: 'SEVERITY', accessor: 'severity', render: (row) => <StatusBadge level={row.severity} size="xs" /> },
                   { header: 'DATE', accessor: 'date', render: (row) => <span className="font-mono text-xs">{formatDate(row.date)}</span> },
-                  { header: 'DESCRIPTION', accessor: 'description', cellClassName: 'text-xs text-[#5F6368] max-w-xs truncate' }
+                  { header: 'NOTES', accessor: 'description', cellClassName: 'text-xs text-[#5F6368] max-w-xs truncate' }
                 ]}
                 data={recentInterventions}
                 idKey="maintenance_id"
               />
             ) : (
-              <p className="text-xs text-[#5F6368] py-4 text-center italic">
-                No recent intervention records logged for active assets.
+              <p className="text-xs text-[#5F6368] py-4 text-center">
+                No recent maintenance work orders recorded.
               </p>
             )}
           </div>

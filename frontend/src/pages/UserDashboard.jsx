@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Building2, 
   MapPin, 
@@ -6,13 +6,16 @@ import {
   CheckCircle2, 
   Clock, 
   ThumbsUp, 
-  Search,
-  Wrench,
-  AlertTriangle,
-  Info,
-  ChevronRight,
-  Bell,
-  FileText
+  Search, 
+  Wrench, 
+  AlertTriangle, 
+  Info, 
+  ChevronRight, 
+  Bell, 
+  FileText,
+  Navigation,
+  Locate,
+  Crosshair
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -23,18 +26,65 @@ import { AssetDetails } from '../components/assets/AssetDetails';
 import { SEED_ASSETS, MOCK_CITIZEN_COMPLAINTS } from '../data/mockData';
 import assetService from '../services/assetService';
 import dashboardService from '../services/dashboardService';
+import {
+  MUNICIPAL_WARDS,
+  calculateDistanceKm,
+  findClosestWard,
+  reverseGeocode,
+  getLocalizedWardsAndComplaints
+} from '../utils/locationUtils';
+import { useUserLocation } from '../hooks/useUserLocation';
 
-export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
+export const UserDashboard = ({ onSelectAsset, activeTab = 'overview', locationData: externalLocationData }) => {
+  const internalLocationData = useUserLocation();
+  const locationData = externalLocationData || internalLocationData;
+  const {
+    coords: userCoords,
+    status: locationStatus,
+    addressInfo,
+    closestWard,
+    selectedWard,
+    setSelectedWard,
+    requestLocation,
+    wards: fallbackWards = MUNICIPAL_WARDS
+  } = locationData;
+
   const [assets, setAssets] = useState(SEED_ASSETS);
   const [metrics, setMetrics] = useState(null);
   const [complaints, setComplaints] = useState(MOCK_CITIZEN_COMPLAINTS);
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
   const [newLocation, setNewLocation] = useState('');
+  const [newArea, setNewArea] = useState(addressInfo?.shortName || 'Local Area');
   const [newCategory, setNewCategory] = useState('Pothole / Road Depression');
   const [searchTerm, setSearchTerm] = useState('');
+  const [issuesFilterWard, setIssuesFilterWard] = useState(selectedWard || (userCoords ? 'NEAR_2KM' : 'ALL'));
+  const [myComplaintsWard, setMyComplaintsWard] = useState('ALL');
   const [selectedAssetId, setSelectedAssetId] = useState(null);
   const [isLive, setIsLive] = useState(false);
+
+  // Sync locality when detected
+  useEffect(() => {
+    if (addressInfo?.shortName && (!newArea || newArea === 'Local Area')) {
+      setNewArea(addressInfo.shortName);
+    }
+  }, [addressInfo]);
+
+  // Sync filter when global location updates
+  useEffect(() => {
+    if (selectedWard) {
+      setIssuesFilterWard(selectedWard);
+    }
+  }, [selectedWard]);
+
+  // Dynamically anchor demonstration area and issue coordinates realistically around user's GPS
+  const localizedData = useMemo(() => {
+    return getLocalizedWardsAndComplaints(userCoords, complaints, assets, addressInfo);
+  }, [userCoords, complaints, assets, addressInfo]);
+
+  const activeWards = localizedData.wards;
+  const currentComplaints = localizedData.complaints;
+  const currentAssets = localizedData.assets;
 
   useEffect(() => {
     let mounted = true;
@@ -54,14 +104,60 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
     return () => { mounted = false; };
   }, []);
 
-  const topAsset = assets[0] || SEED_ASSETS[0];
+  // Filter complaints based on Proximity or Area
+  const activeWardComplaints = useMemo(() => {
+    if (issuesFilterWard === 'ALL') {
+      return currentComplaints;
+    }
+    if (issuesFilterWard === 'NEAR_2KM') {
+      const near = currentComplaints.filter(c => c.distanceKm != null && c.distanceKm <= 2.0);
+      return near.length > 0 ? near : currentComplaints;
+    }
+    if (issuesFilterWard === 'NEAR_5KM') {
+      const near = currentComplaints.filter(c => c.distanceKm != null && c.distanceKm <= 5.0);
+      return near.length > 0 ? near : currentComplaints;
+    }
+    return currentComplaints.filter(c => 
+      c.ward === issuesFilterWard || 
+      c.shortArea === issuesFilterWard || 
+      c.areaName?.includes(issuesFilterWard)
+    );
+  }, [currentComplaints, issuesFilterWard]);
 
-  const lowCount = metrics?.risk_distribution?.LOW ?? assets.filter(a => a.risk_level === 'LOW').length;
-  const medCount = metrics?.risk_distribution?.MEDIUM ?? assets.filter(a => a.risk_level === 'MEDIUM').length;
-  const highCritCount = metrics
-    ? ((metrics.risk_distribution?.HIGH || 0) + (metrics.risk_distribution?.CRITICAL || 0))
-    : assets.filter(a => a.risk_level === 'HIGH' || a.risk_level === 'CRITICAL').length;
-  const totalCount = metrics?.total_assets || assets.length || 1;
+  // Filter assets based on Proximity or Area
+  const activeWardAssets = useMemo(() => {
+    if (issuesFilterWard === 'ALL') {
+      return currentAssets;
+    }
+    if (issuesFilterWard === 'NEAR_2KM') {
+      const near = currentAssets.filter(a => a.distanceKm != null && a.distanceKm <= 2.0);
+      return near.length > 0 ? near : currentAssets;
+    }
+    if (issuesFilterWard === 'NEAR_5KM') {
+      const near = currentAssets.filter(a => a.distanceKm != null && a.distanceKm <= 5.0);
+      return near.length > 0 ? near : currentAssets;
+    }
+    return currentAssets.filter(a => a.location?.includes(issuesFilterWard) || a.areaName?.includes(issuesFilterWard));
+  }, [currentAssets, issuesFilterWard]);
+
+  const topAsset = activeWardAssets[0] || currentAssets[0] || SEED_ASSETS[0];
+
+  // Dynamic counts for overview metric cards - strictly synchronized with active dataset!
+  const totalAssetsCount = issuesFilterWard === 'ALL'
+    ? (metrics?.total_assets || currentAssets.length)
+    : activeWardAssets.length;
+
+  const totalIssuesCount = activeWardComplaints.length;
+
+  const underMaintenanceCount = issuesFilterWard === 'ALL'
+    ? (metrics?.under_maintenance_count ?? currentAssets.filter(a => a.status === 'UNDER_MAINTENANCE').length)
+    : activeWardAssets.filter(a => a.status === 'UNDER_MAINTENANCE').length;
+
+  const resolvedIssuesCount = activeWardComplaints.filter(c => c.status === 'Resolved' || c.status === 'RESOLVED').length;
+
+  const lowCount = metrics?.risk_distribution?.LOW ?? currentAssets.filter(a => a.risk_level === 'LOW').length;
+  const medCount = metrics?.risk_distribution?.MEDIUM ?? currentAssets.filter(a => a.risk_level === 'MEDIUM').length;
+  const totalCount = metrics?.total_assets || currentAssets.length || 1;
   const healthyPercent = Math.round((lowCount / totalCount) * 100);
   const maintenancePercent = Math.round((medCount / totalCount) * 100);
   const repairPercent = Math.max(0, 100 - healthyPercent - maintenancePercent);
@@ -74,19 +170,25 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
+    const areaLabel = newArea || addressInfo?.shortName || 'Local Area';
     const newEntry = {
       id: `CMP-2026-${Math.floor(8800 + Math.random() * 200)}`,
       asset_id: "RD-021",
       title: newTitle,
       category: newCategory,
-      location: newLocation || "Ward 4 Community Link",
+      location: newLocation || `${areaLabel} Main Road`,
       ward: "Ward 4",
+      area: areaLabel,
+      areaName: areaLabel,
+      shortArea: areaLabel,
+      coordinates: userCoords || [23.36, 85.55],
+      distanceKm: userCoords ? 0.05 : null,
       submitted_at: "Just now",
       status: "Submitted",
       urgency_flag: "Medium",
       upvotes: 1,
       citizen_name: "Citizen (You)",
-      notes: "Received and scheduled for inspection."
+      notes: "Received and scheduled for municipal inspection."
     };
 
     setComplaints([newEntry, ...complaints]);
@@ -95,10 +197,26 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
     setShowSubmitModal(false);
   };
 
-  const filteredComplaints = complaints.filter(c => 
-    c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.location.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filter complaints in Nearby Issues by search term and sort by proximity
+  const filteredComplaints = activeWardComplaints
+    .filter(c => {
+      if (!searchTerm) return true;
+      const term = searchTerm.toLowerCase();
+      return (
+        c.title.toLowerCase().includes(term) ||
+        c.location.toLowerCase().includes(term) ||
+        (c.ward && c.ward.toLowerCase().includes(term)) ||
+        c.category.toLowerCase().includes(term)
+      );
+    })
+    .sort((a, b) => {
+      if (userCoords && a.coordinates && b.coordinates) {
+        const distA = calculateDistanceKm(userCoords[0], userCoords[1], a.coordinates[0], a.coordinates[1]) ?? 9999;
+        const distB = calculateDistanceKm(userCoords[0], userCoords[1], b.coordinates[0], b.coordinates[1]) ?? 9999;
+        return distA - distB;
+      }
+      return 0;
+    });
 
   const complaintColumns = [
     {
@@ -112,9 +230,32 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
       )
     },
     {
-      header: 'LOCATION',
+      header: 'LOCATION & AREA',
       accessor: 'location',
-      cellClassName: 'text-[#5F6368]'
+      render: (row) => {
+        const dist = row.distanceKm != null
+          ? row.distanceKm
+          : (userCoords && row.coordinates
+              ? calculateDistanceKm(userCoords[0], userCoords[1], row.coordinates[0], row.coordinates[1])
+              : null);
+        return (
+          <div>
+            <div className="font-medium text-[#1A1A1A] text-xs">{row.location}</div>
+            <div className="flex items-center space-x-1.5 mt-0.5 flex-wrap gap-y-1">
+              <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                📍 {row.shortArea || row.area || row.areaName || row.ward}
+              </span>
+              {dist != null ? (
+                <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">
+                  {dist < 1 ? `${Math.round(dist * 1000)}m away` : `${dist.toFixed(1)} km away`}
+                </span>
+              ) : (
+                <span className="text-[10px] text-[#5F6368]">Registered</span>
+              )}
+            </div>
+          </div>
+        );
+      }
     },
     {
       header: 'STATUS',
@@ -144,13 +285,45 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
 
   // ── TAB: My Complaints ───────────────────────────────────────────────
   if (activeTab === 'complaints') {
+    const displayedMyComplaints = currentComplaints
+      .filter(c => {
+        if (myComplaintsWard === 'NEAR_2KM') {
+          if (c.distanceKm == null || c.distanceKm > 2.0) return false;
+        } else if (myComplaintsWard === 'NEAR_5KM') {
+          if (c.distanceKm == null || c.distanceKm > 5.0) return false;
+        } else if (myComplaintsWard !== 'ALL' && c.ward !== myComplaintsWard && c.shortArea !== myComplaintsWard) {
+          return false;
+        }
+        if (!searchTerm) return true;
+        const term = searchTerm.toLowerCase();
+        return (
+          c.title.toLowerCase().includes(term) ||
+          c.location.toLowerCase().includes(term) ||
+          (c.areaName && c.areaName.toLowerCase().includes(term)) ||
+          (c.shortArea && c.shortArea.toLowerCase().includes(term)) ||
+          (c.ward && c.ward.toLowerCase().includes(term)) ||
+          c.category.toLowerCase().includes(term)
+        );
+      })
+      .sort((a, b) => {
+        if (userCoords && a.coordinates && b.coordinates) {
+          const distA = calculateDistanceKm(userCoords[0], userCoords[1], a.coordinates[0], a.coordinates[1]) ?? 9999;
+          const distB = calculateDistanceKm(userCoords[0], userCoords[1], b.coordinates[0], b.coordinates[1]) ?? 9999;
+          return distA - distB;
+        }
+        return 0;
+      });
+
+    const near2kmMyCount = currentComplaints.filter(c => c.distanceKm != null && c.distanceKm <= 2.0).length;
+    const near5kmMyCount = currentComplaints.filter(c => c.distanceKm != null && c.distanceKm <= 5.0).length;
+
     return (
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DDE1E5] pb-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-[#1A1A1A]">My Complaints</h1>
             <p className="text-xs text-[#5F6368] mt-0.5">
-              Track all issues you have reported in your ward.
+              Track all municipal issues reported in your jurisdiction.
             </p>
           </div>
           <Button variant="primary" size="sm" onClick={() => setShowSubmitModal(true)} className="flex items-center space-x-1.5 self-start sm:self-auto">
@@ -163,20 +336,68 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDE1E5] pb-3 mb-4">
             <div>
               <h3 className="text-sm font-bold text-[#1A1A1A]">All Reported Issues</h3>
-              <span className="text-xs text-[#5F6368]">Showing {filteredComplaints.length} of {complaints.length} submissions</span>
+              <span className="text-xs text-[#5F6368]">
+                {myComplaintsWard === 'ALL'
+                  ? `Showing all ${displayedMyComplaints.length} submissions across municipality`
+                  : myComplaintsWard === 'NEAR_2KM'
+                  ? `Showing ${displayedMyComplaints.length} submissions within 2 km of your location (out of ${currentComplaints.length} total)`
+                  : myComplaintsWard === 'NEAR_5KM'
+                  ? `Showing ${displayedMyComplaints.length} submissions within 5 km of your location (out of ${currentComplaints.length} total)`
+                  : `Showing ${displayedMyComplaints.length} submissions in ${activeWards.find(w => w.id === myComplaintsWard)?.shortLabel || myComplaintsWard} (out of ${currentComplaints.length} total)`}
+              </span>
             </div>
-            <input
-              type="text"
-              placeholder="Search issues..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="px-3 py-1.5 text-xs border border-[#DDE1E5] rounded bg-[#F7F8FA] focus:outline-none focus:border-[#168A44] w-48"
-            />
+
+            <div className="flex items-center space-x-2">
+              <select
+                value={myComplaintsWard}
+                onChange={(e) => setMyComplaintsWard(e.target.value)}
+                className="px-2.5 py-1.5 text-xs border border-[#DDE1E5] rounded bg-white text-[#1A1A1A] focus:outline-none focus:border-[#168A44] font-medium"
+                title="Filter complaints by proximity or area"
+              >
+                <option value="ALL">🌐 All Reports ({currentComplaints.length})</option>
+                {userCoords && (
+                  <>
+                    <option value="NEAR_2KM">📍 Near Me (&lt; 2 km) ({near2kmMyCount})</option>
+                    <option value="NEAR_5KM">📍 Local Area (&lt; 5 km) ({near5kmMyCount})</option>
+                  </>
+                )}
+                {activeWards.map(w => (
+                  <option key={w.id} value={w.id}>
+                    {w.shortLabel ? `📍 ${w.shortLabel}` : `📍 ${w.name}`} ({currentComplaints.filter(c => c.ward === w.id).length})
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="text"
+                placeholder="Search issues..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="px-3 py-1.5 text-xs border border-[#DDE1E5] rounded bg-[#F7F8FA] focus:outline-none focus:border-[#168A44] w-40"
+              />
+            </div>
           </div>
-          <DataTable columns={complaintColumns} data={filteredComplaints} idKey="id" emptyMessage="No issues found." />
+          <DataTable columns={complaintColumns} data={displayedMyComplaints} idKey="id" emptyMessage="No issues found." />
         </div>
 
-        {showSubmitModal && <SubmitModal onClose={() => setShowSubmitModal(false)} onSubmit={handleAddComplaint} newTitle={newTitle} setNewTitle={setNewTitle} newLocation={newLocation} setNewLocation={setNewLocation} newCategory={newCategory} setNewCategory={setNewCategory} />}
+        {showSubmitModal && (
+          <SubmitModal 
+            onClose={() => setShowSubmitModal(false)} 
+            onSubmit={handleAddComplaint} 
+            newTitle={newTitle} 
+            setNewTitle={setNewTitle} 
+            newLocation={newLocation} 
+            setNewLocation={setNewLocation} 
+            newArea={newArea}
+            setNewArea={setNewArea}
+            newCategory={newCategory} 
+            setNewCategory={setNewCategory}
+            userCoords={userCoords}
+            addressInfo={addressInfo}
+            onRequestLocation={requestLocation}
+            locationStatus={locationStatus}
+          />
+        )}
       </div>
     );
   }
@@ -305,27 +526,106 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
         </Button>
       </div>
 
-      {/* 4 Summary Cards */}
+      {/* Real-Time Location Banner */}
+      {locationStatus === 'requesting' && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800 flex items-center justify-between animate-pulse">
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping inline-block" />
+            <span>📍 <strong>Requesting browser location:</strong> Please allow location access in your browser to discover infrastructure issues in your immediate vicinity...</span>
+          </div>
+        </div>
+      )}
+
+      {locationStatus === 'granted' && (
+        <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-xs">
+          <div className="flex items-center space-x-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block shrink-0" />
+            <span>
+              <strong>Real-Time Location Active:</strong> Near{' '}
+              <strong className="text-[#126B37]">{addressInfo?.shortName || 'Current Location'}</strong>
+              {addressInfo?.city ? ` (${addressInfo.city})` : ''}. Showing issues sorted by real distance to you.
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 shrink-0">
+            <button
+              onClick={() => requestLocation(true)}
+              className="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-emerald-300 rounded text-xs text-[#168A44] hover:bg-emerald-100 font-semibold transition-colors"
+              title="Refresh GPS location"
+            >
+              <Locate className="w-3 h-3" />
+              <span>Refresh GPS</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {locationStatus === 'denied' && (
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center space-x-2">
+            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>
+              <strong>Location Access Blocked / Denied:</strong> Defaulting to{' '}
+              <strong>{issuesFilterWard === 'ALL' ? 'All Areas' : issuesFilterWard}</strong>. You can switch areas using the Area Dropdown or re-request GPS.
+            </span>
+          </div>
+          <button
+            onClick={() => requestLocation(true)}
+            className="inline-flex items-center space-x-1 px-2 py-0.5 bg-white border border-amber-300 rounded text-xs text-amber-800 hover:bg-amber-100 font-medium transition-colors self-start sm:self-auto"
+          >
+            <span>Retry GPS Access</span>
+          </button>
+        </div>
+      )}
+
+      {/* 4 Summary Cards - DYNAMICALLY SYNCED WITH ACTIVE WARD / PROXIMITY */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <MetricPanel
           label="Total Assets"
-          value={metrics ? metrics.total_assets : assets.length}
-          subtext="Roads, lights & infrastructure"
+          value={issuesFilterWard === 'ALL' ? (metrics ? metrics.total_assets : currentAssets.length) : `${totalAssetsCount} Sites`}
+          subtext={
+            issuesFilterWard === 'ALL'
+              ? "Roads, lights & infrastructure"
+              : issuesFilterWard === 'NEAR_2KM'
+              ? "Assets within 2 km"
+              : issuesFilterWard === 'NEAR_5KM'
+              ? "Assets within 5 km"
+              : `Monitored in ${activeWards.find(w => w.id === issuesFilterWard)?.shortLabel || issuesFilterWard}`
+          }
         />
         <MetricPanel
           label="Issues Reported"
-          value={complaints.length}
-          subtext="Active community complaints"
+          value={`${totalIssuesCount} Issues`}
+          subtext={
+            issuesFilterWard === 'ALL'
+              ? "Active reports across municipality"
+              : issuesFilterWard === 'NEAR_2KM'
+              ? "Active reports within 2 km"
+              : issuesFilterWard === 'NEAR_5KM'
+              ? "Active reports within 5 km"
+              : `Active reports in ${activeWards.find(w => w.id === issuesFilterWard)?.shortLabel || issuesFilterWard}`
+          }
         />
         <MetricPanel
           label="Under Maintenance"
-          value={`${metrics?.under_maintenance_count ?? assets.filter(a => a.status === 'UNDER_MAINTENANCE').length} Sites`}
-          subtext="Repairs in progress"
+          value={`${underMaintenanceCount} Sites`}
+          subtext={
+            issuesFilterWard === 'ALL'
+              ? "Repairs in progress citywide"
+              : issuesFilterWard === 'NEAR_2KM' || issuesFilterWard === 'NEAR_5KM'
+              ? "Active repairs in vicinity"
+              : `Repairs in ${activeWards.find(w => w.id === issuesFilterWard)?.shortLabel || issuesFilterWard}`
+          }
         />
         <MetricPanel
           label="Resolved"
-          value={`${complaints.filter(c => c.status === 'Resolved' || c.status === 'RESOLVED').length} Issues`}
-          subtext="Closed community reports"
+          value={`${resolvedIssuesCount} Issues`}
+          subtext={
+            issuesFilterWard === 'ALL'
+              ? "Closed community reports"
+              : issuesFilterWard === 'NEAR_2KM' || issuesFilterWard === 'NEAR_5KM'
+              ? "Resolved in vicinity"
+              : `Closed in ${activeWards.find(w => w.id === issuesFilterWard)?.shortLabel || issuesFilterWard}`
+          }
         />
       </div>
 
@@ -336,7 +636,7 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
             <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
             <div>
               <div className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-0.5">
-                Top Priority Asset in Your District
+                Top Priority Asset in Your Area
               </div>
               <div className="text-sm font-bold text-[#1A1A1A]">{topAsset.name}</div>
               <div className="text-xs text-[#5F6368] mt-0.5">{topAsset.location} • Priority Score: <strong>{topAsset.priority_score}/100</strong></div>
@@ -426,33 +726,73 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
           </div>
         </div>
 
-        {/* Right Column: Nearby Issues Table */}
+        {/* Right Column: Nearby Issues Table with Area Filter Dropdown */}
         <div className="lg:col-span-7 space-y-4">
           <div className="gov-card p-5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DDE1E5] pb-3 mb-4">
               <div>
-                <h3 className="text-sm font-bold text-[#1A1A1A]">
-                  Nearby Issues
-                </h3>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-sm font-bold text-[#1A1A1A]">
+                    Nearby Issues
+                  </h3>
+                  {userCoords && (
+                    <span className="text-[10px] font-semibold text-[#168A44] bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                      GPS Proximity Sorted
+                    </span>
+                  )}
+                </div>
                 <span className="text-xs text-[#5F6368]">
-                  Community reports in Ward 4 and adjacent sectors.
+                  {issuesFilterWard === 'ALL'
+                    ? `Showing all ${filteredComplaints.length} submissions across municipality.`
+                    : issuesFilterWard === 'NEAR_2KM'
+                    ? `Showing ${filteredComplaints.length} submissions within 2 km of your location (out of ${currentComplaints.length} total).`
+                    : issuesFilterWard === 'NEAR_5KM'
+                    ? `Showing ${filteredComplaints.length} submissions within 5 km of your location (out of ${currentComplaints.length} total).`
+                    : `Showing ${filteredComplaints.length} submissions in ${activeWards.find(w => w.id === issuesFilterWard)?.shortLabel || issuesFilterWard} (out of ${currentComplaints.length} total).`}
                 </span>
               </div>
 
-              <input
-                type="text"
-                placeholder="Search issues..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="px-3 py-1.5 text-xs border border-[#DDE1E5] rounded bg-[#F7F8FA] focus:outline-none focus:border-[#168A44] w-48"
-              />
+              {/* Area & Proximity Dropdown and Search Input */}
+              <div className="flex items-center space-x-2">
+                <select
+                  value={issuesFilterWard}
+                  onChange={(e) => setIssuesFilterWard(e.target.value)}
+                  className="px-2.5 py-1.5 text-xs border border-[#DDE1E5] rounded bg-white text-[#1A1A1A] focus:outline-none focus:border-[#168A44] font-medium"
+                  title="Filter issues by proximity or area"
+                >
+                  <option value="ALL">🌐 All Reports ({currentComplaints.length} Citywide)</option>
+                  {userCoords && (
+                    <>
+                      <option value="NEAR_2KM">📍 Near Me (&lt; 2 km) ({currentComplaints.filter(c => c.distanceKm != null && c.distanceKm <= 2.0).length})</option>
+                      <option value="NEAR_5KM">📍 Local Area (&lt; 5 km) ({currentComplaints.filter(c => c.distanceKm != null && c.distanceKm <= 5.0).length})</option>
+                    </>
+                  )}
+                  {activeWards.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.shortLabel ? `📍 ${w.shortLabel}` : `📍 ${w.name}`} ({currentComplaints.filter(c => c.ward === w.id).length})
+                    </option>
+                  ))}
+                </select>
+
+                <input
+                  type="text"
+                  placeholder="Search issues..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="px-3 py-1.5 text-xs border border-[#DDE1E5] rounded bg-[#F7F8FA] focus:outline-none focus:border-[#168A44] w-32 sm:w-44"
+                />
+              </div>
             </div>
 
             <DataTable
               columns={complaintColumns}
               data={filteredComplaints}
               idKey="id"
-              emptyMessage="No issues found."
+              emptyMessage={
+                issuesFilterWard === 'ALL' 
+                  ? "No issues found matching your query." 
+                  : `No issues reported yet in ${issuesFilterWard}.`
+              }
             />
           </div>
         </div>
@@ -473,67 +813,234 @@ export const UserDashboard = ({ onSelectAsset, activeTab = 'overview' }) => {
           setNewTitle={setNewTitle}
           newLocation={newLocation}
           setNewLocation={setNewLocation}
+          newArea={newArea}
+          setNewArea={setNewArea}
           newCategory={newCategory}
           setNewCategory={setNewCategory}
+          userCoords={userCoords}
+          addressInfo={addressInfo}
+          onRequestLocation={requestLocation}
+          locationStatus={locationStatus}
         />
       )}
     </div>
   );
 };
 
-// ── Shared Submit Modal ───────────────────────────────────────────────
-const SubmitModal = ({ onClose, onSubmit, newTitle, setNewTitle, newLocation, setNewLocation, newCategory, setNewCategory }) => (
-  <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-    <div className="bg-white border border-[#DDE1E5] rounded gov-card w-full max-w-md p-6 space-y-4 shadow-lg">
-      <div className="border-b border-[#DDE1E5] pb-3">
-        <h3 className="text-base font-bold text-[#1A1A1A]">Report an Issue</h3>
-        <p className="text-xs text-[#5F6368] mt-0.5">Submit a problem for municipal inspection</p>
-      </div>
+// ── Shared Submit Modal with Real Locality & GPS Auto-Fill ─────────
+const SubmitModal = ({ 
+  onClose, 
+  onSubmit, 
+  newTitle, 
+  setNewTitle, 
+  newLocation, 
+  setNewLocation, 
+  newArea, 
+  setNewArea, 
+  newCategory, 
+  setNewCategory,
+  userCoords,
+  addressInfo,
+  onRequestLocation,
+  locationStatus
+}) => {
+  const [detectingGps, setDetectingGps] = useState(false);
+  const [gpsAttached, setGpsAttached] = useState(false);
 
-      <form onSubmit={onSubmit} className="space-y-3.5">
-        <Input
-          label="Issue Summary"
-          id="complaintTitle"
-          placeholder="e.g. Broken pavement near bus stop"
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-          required
-        />
+  // Quick suggestions for roads / landmarks
+  const suggestedLocations = [
+    "Usha Martin Turning Road",
+    "Central Arterial Corridor",
+    "Commercial Market Square",
+    "Industrial Outer Ring Road",
+    "Collector Road 8, Sector 5",
+    "Station Road Junction"
+  ];
 
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-[#1A1A1A]">
-            Category
-          </label>
-          <select
-            value={newCategory}
-            onChange={(e) => setNewCategory(e.target.value)}
-            className="w-full px-3 py-2 text-sm bg-white border border-[#DDE1E5] rounded focus:border-[#168A44] text-[#1A1A1A] focus:outline-none"
+  const handleUseGps = () => {
+    setDetectingGps(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          try {
+            const geo = await reverseGeocode(lat, lon);
+            if (geo) {
+              setNewArea(geo.shortName);
+              const roadName = geo.raw?.address?.road || geo.raw?.address?.suburb || geo.shortName;
+              setNewLocation(roadName);
+            } else {
+              setNewLocation(`GPS Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+            }
+          } catch {
+            setNewLocation(`GPS Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`);
+          }
+          setDetectingGps(false);
+          setGpsAttached(true);
+        },
+        () => {
+          setDetectingGps(false);
+          if (userCoords) {
+            setNewArea(addressInfo?.shortName || 'Local Area');
+            setNewLocation(addressInfo?.shortName || `GPS (${userCoords[0].toFixed(3)}, ${userCoords[1].toFixed(3)})`);
+            setGpsAttached(true);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    } else {
+      setDetectingGps(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white border border-[#DDE1E5] rounded gov-card w-full max-w-lg p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto">
+        <div className="border-b border-[#DDE1E5] pb-3 flex items-center justify-between">
+          <div>
+            <h3 className="text-base font-bold text-[#1A1A1A]">Report an Issue</h3>
+            <p className="text-xs text-[#5F6368] mt-0.5">Submit an infrastructure problem for municipal inspection</p>
+          </div>
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="text-gray-400 hover:text-gray-600 p-1 text-sm font-semibold"
           >
-            <option value="Pothole / Road Depression">Pothole / Road Depression</option>
-            <option value="Streetlight Malfunction">Streetlight Malfunction</option>
-            <option value="Drainage / Surface Stripping">Drainage / Surface Stripping</option>
-            <option value="Road Signage / Markings">Road Signage / Markings</option>
-          </select>
+            ✕
+          </button>
         </div>
 
-        <Input
-          label="Location"
-          id="complaintLocation"
-          placeholder="e.g. Central Market Road"
-          value={newLocation}
-          onChange={(e) => setNewLocation(e.target.value)}
-          required
-        />
+        <form onSubmit={onSubmit} className="space-y-4">
+          <Input
+            label="Issue Summary *"
+            id="complaintTitle"
+            placeholder="e.g. large pothole near turning or broken pavement"
+            value={newTitle}
+            onChange={(e) => setNewTitle(e.target.value)}
+            required
+          />
 
-        <div className="pt-3 border-t border-[#DDE1E5] flex justify-end space-x-2">
-          <Button variant="secondary" size="sm" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" size="sm" type="submit">
-            Submit Issue
-          </Button>
-        </div>
-      </form>
+          <div className="space-y-1">
+            <label className="text-xs font-semibold text-[#1A1A1A]">
+              Category
+            </label>
+            <select
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className="w-full px-3 py-2 text-sm bg-white border border-[#DDE1E5] rounded focus:border-[#168A44] text-[#1A1A1A] focus:outline-none"
+            >
+              <option value="Pothole / Road Depression">Pothole / Road Depression</option>
+              <option value="Streetlight Malfunction">Streetlight Malfunction</option>
+              <option value="Drainage / Surface Stripping">Drainage / Surface Stripping</option>
+              <option value="Road Signage / Markings">Road Signage / Markings</option>
+            </select>
+          </div>
+
+          {/* Real Area / Locality field (Replaces the synthetic Municipal Ward select) */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-[#1A1A1A]">
+                Area / Locality *
+              </label>
+              {userCoords && (
+                <span className="text-[11px] text-[#168A44] font-medium flex items-center space-x-1">
+                  <span>📍 Auto-detected from GPS</span>
+                </span>
+              )}
+            </div>
+            <input
+              type="text"
+              value={newArea}
+              onChange={(e) => setNewArea(e.target.value)}
+              placeholder="e.g. Angara, Ranchi or Central Sector"
+              className="w-full px-3 py-2 text-sm bg-white border border-[#DDE1E5] rounded focus:border-[#168A44] text-[#1A1A1A] focus:outline-none font-medium"
+              required
+            />
+            <p className="text-[11px] text-[#5F6368]">
+              Your neighborhood, town, or municipal zone (automatically pre-filled from your live location).
+            </p>
+          </div>
+
+          {/* Location / Road with GPS Auto-Detect Button & Suggestions */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-semibold text-[#1A1A1A]">
+                Street / Landmark / Road *
+              </label>
+              <button
+                type="button"
+                onClick={handleUseGps}
+                disabled={detectingGps}
+                className="inline-flex items-center space-x-1 text-xs font-semibold text-[#168A44] hover:text-[#126B37] bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded transition-colors shadow-xs"
+                title="Detect and use current device GPS location"
+              >
+                <MapPin className="w-3.5 h-3.5 text-[#168A44]" />
+                <span>{detectingGps ? 'Detecting GPS...' : '📍 Use Real-Time GPS'}</span>
+              </button>
+            </div>
+
+            {/* Quick Suggestion Chips */}
+            <div className="flex flex-wrap gap-1.5 pt-0.5">
+              <span className="text-[11px] text-[#5F6368] self-center">Quick options:</span>
+              {suggestedLocations.map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => {
+                    setNewLocation(loc);
+                    setGpsAttached(false);
+                  }}
+                  className="text-[11px] px-2 py-0.5 bg-gray-100 hover:bg-emerald-50 hover:text-[#168A44] hover:border-emerald-300 border border-[#DDE1E5] rounded transition-colors"
+                >
+                  + {loc}
+                </button>
+              ))}
+            </div>
+
+            {/* Text input with datalist */}
+            <div className="relative">
+              <input
+                id="complaintLocation"
+                type="text"
+                list="location-options"
+                placeholder="Type specific road (e.g. usha martin turning road, station road)"
+                value={newLocation}
+                onChange={(e) => {
+                  setNewLocation(e.target.value);
+                  setGpsAttached(false);
+                }}
+                required
+                className="w-full px-3 py-2 text-sm bg-white border border-[#DDE1E5] rounded focus:border-[#168A44] text-[#1A1A1A] focus:outline-none"
+              />
+              <datalist id="location-options">
+                {suggestedLocations.map((loc) => (
+                  <option key={loc} value={loc} />
+                ))}
+              </datalist>
+            </div>
+
+            {gpsAttached && (
+              <div className="text-[11px] text-[#168A44] flex items-center space-x-1 font-medium bg-emerald-50 p-1.5 rounded border border-emerald-200">
+                <span>✓ Real-time GPS location and coordinates attached to this report.</span>
+              </div>
+            )}
+            <p className="text-[11px] text-[#5F6368]">
+              Click "📍 Use Real-Time GPS", choose a quick suggestion, or type any landmark.
+            </p>
+          </div>
+
+          <div className="pt-3 border-t border-[#DDE1E5] flex justify-end space-x-2">
+            <Button variant="secondary" size="sm" onClick={onClose} type="button">
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" type="submit">
+              Submit Issue
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
-);
+  );
+};
+

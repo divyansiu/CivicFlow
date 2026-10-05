@@ -80,7 +80,7 @@ export const AssetDetailsPage = ({ assetId = 'RD-021', onBack }) => {
     return (
       <div className="p-8 text-center bg-white rounded border border-[#DDE1E5]">
         <RefreshCw className="w-6 h-6 text-[#168A44] animate-spin mx-auto mb-2" />
-        <p className="text-xs text-[#5F6368]">Loading asset decision details from backend API...</p>
+        <p className="text-xs text-[#5F6368]">Loading asset details...</p>
       </div>
     );
   }
@@ -143,7 +143,7 @@ export const AssetDetailsPage = ({ assetId = 'RD-021', onBack }) => {
         <div className="flex items-center space-x-2">
           <Button variant="outline" size="sm" onClick={handleSimulate} disabled={simulating}>
             <Wrench className="w-3.5 h-3.5 mr-1" />
-            {simulating ? 'Simulating...' : 'What-If Simulation'}
+            {simulating ? 'Simulating...' : 'Simulate Repair Impact'}
           </Button>
           <Button variant="primary" size="sm" onClick={handleActionTaken}>
             Schedule Maintenance
@@ -189,7 +189,7 @@ export const AssetDetailsPage = ({ assetId = 'RD-021', onBack }) => {
             <div className="bg-emerald-50/60 border border-emerald-300 rounded p-4 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#126B37] uppercase tracking-wider">
-                  What-If Simulation Result ({simulationResult.intervention_type})
+                  Simulated Impact ({simulationResult.intervention_type})
                 </span>
                 <span className="text-[11px] text-[#5F6368] font-mono">
                   Risk Delta: -{simulationResult.risk_delta} pts
@@ -265,9 +265,6 @@ export const AssetDetailsPage = ({ assetId = 'RD-021', onBack }) => {
                 <span className="text-[#5F6368]">Operational Status</span>
                 <span className="font-mono font-bold text-[#126B37]">{asset.status || 'ACTIVE'}</span>
               </div>
-            </div>
-            <div className="text-[10px] text-[#5F6368] italic pt-2 border-t border-gray-100">
-              * Public/geospatial records + clearly labeled synthetic operational data
             </div>
           </div>
         </div>

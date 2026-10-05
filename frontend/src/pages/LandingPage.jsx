@@ -102,7 +102,7 @@ export const LandingPage = ({ onExploreDashboard }) => {
                   <span className="w-2 h-2 rounded-full bg-[#86EFAC]"></span>
                   <span>Maintenance Priority Overview</span>
                 </span>
-                <span className="text-[#D1E7DD]">Ward 4</span>
+                <span className="text-[#D1E7DD]">Central Zone</span>
               </div>
 
               {/* Card Body */}
@@ -251,7 +251,7 @@ export const LandingPage = ({ onExploreDashboard }) => {
             Access the Infrastructure Management Platform
           </h2>
           <p className="text-sm text-[#5F6368] leading-relaxed">
-            Sign in to view operational maintenance queues, report issues, or oversee ward infrastructure health.
+            Sign in to view maintenance priority queues, inspect assets, and schedule infrastructure repairs.
           </p>
           <div>
             <Button variant="primary" size="lg" onClick={onExploreDashboard}>

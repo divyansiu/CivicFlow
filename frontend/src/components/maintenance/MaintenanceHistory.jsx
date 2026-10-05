@@ -15,7 +15,7 @@ export const MaintenanceHistory = ({ history }) => {
       <div className="p-4 border-b border-[#DDE1E5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
           <Wrench className="w-4 h-4 text-[#168A44]" />
-          <h3 className="font-bold text-sm text-[#1A1A1A]">Operational &amp; Maintenance Logs</h3>
+          <h3 className="font-bold text-sm text-[#1A1A1A]">Work &amp; Inspection Records</h3>
         </div>
 
         <div className="flex items-center space-x-1 text-xs">
@@ -27,7 +27,7 @@ export const MaintenanceHistory = ({ history }) => {
                 : 'bg-gray-100 text-[#5F6368] hover:bg-gray-200'
             }`}
           >
-            Interventions ({records.length})
+            Work Orders ({records.length})
           </button>
           <button
             onClick={() => setActiveTab('complaints')}
@@ -37,7 +37,7 @@ export const MaintenanceHistory = ({ history }) => {
                 : 'bg-gray-100 text-[#5F6368] hover:bg-gray-200'
             }`}
           >
-            Complaints ({complaints.length})
+            Reported Issues ({complaints.length})
           </button>
           <button
             onClick={() => setActiveTab('inspections')}
@@ -127,7 +127,7 @@ export const MaintenanceHistory = ({ history }) => {
               ))
             ) : (
               <p className="text-xs text-[#5F6368] italic text-center py-4">
-                No citizen grievances filed for this asset.
+                No issues reported for this asset.
               </p>
             )}
           </div>

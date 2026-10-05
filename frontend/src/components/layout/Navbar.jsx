@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../ui/Button';
 import { ArrowRight, Menu, X } from 'lucide-react';
 
-export const Navbar = ({ onExploreDashboard, currentRole, onLogout }) => {
+export const Navbar = ({ onExploreDashboard, currentRole, onLogout, locationData }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
@@ -27,6 +27,16 @@ export const Navbar = ({ onExploreDashboard, currentRole, onLogout }) => {
 
         {/* Desktop Actions */}
         <div className="hidden sm:flex items-center space-x-3">
+          {locationData && (
+            <div className="flex items-center space-x-1.5 text-xs text-[#5F6368] bg-[#F7F8FA] border border-[#DDE1E5] px-2.5 py-1 rounded">
+              <span className={`w-2 h-2 rounded-full ${locationData.status === 'granted' ? 'bg-[#168A44]' : 'bg-amber-500'}`} />
+              <span className="font-medium text-[#1A1A1A]">
+                {locationData.status === 'granted'
+                  ? `📍 ${locationData.addressInfo?.shortName || locationData.closestWard?.name || 'Live GPS'}`
+                  : `📍 ${locationData.selectedWard || 'North District'}`}
+              </span>
+            </div>
+          )}
           {currentRole ? (
             <div className="flex items-center space-x-3">
               <span className="text-xs font-medium text-[#126B37] bg-[#DCFCE7] px-2.5 py-1 rounded border border-emerald-200">

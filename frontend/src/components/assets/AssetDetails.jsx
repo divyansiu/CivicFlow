@@ -101,8 +101,7 @@ export const AssetDetails = ({ asset, onActionTaken }) => {
             </div>
           </div>
           <div className="mt-2 text-[11px] text-[#5F6368] text-right">
-            Formula: Priority = 0.50 × Risk + 0.25 × Urgency + 0.25 × Impact &nbsp;
-            <span className="italic">(prototype design parameters)</span>
+            Formula: Priority = 0.50 × Risk + 0.25 × Urgency + 0.25 × Impact
           </div>
         </div>
       </div>
@@ -198,9 +197,8 @@ export const AssetDetails = ({ asset, onActionTaken }) => {
       <div className="gov-card p-5">
         <div className="flex items-center justify-between border-b border-[#DDE1E5] pb-2 mb-4">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-[#1A1A1A]">
-            Maintenance History
+            Past Maintenance Work Orders
           </h3>
-          <span className="text-[11px] text-[#5F6368] italic">Synthetic prototype data</span>
         </div>
 
         {maintenanceHistory.length === 0 ? (

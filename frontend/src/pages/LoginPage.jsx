@@ -11,9 +11,7 @@ export const LoginPage = ({ onLoginSuccess, onBackToHome }) => {
 
   const handleRoleChange = (role) => {
     setSelectedRole(role);
-    if (role === 'user') {
-      setUserId('citizen.ward4@public.gov.in');
-    } else if (role === 'officer') {
+    if (role === 'officer') {
       setUserId('officer@civicflow.gov.in');
     } else if (role === 'admin') {
       setUserId('admin@civicflow.gov.in');
@@ -69,16 +67,15 @@ export const LoginPage = ({ onLoginSuccess, onBackToHome }) => {
             </p>
           </div>
 
-          {/* Role Selection Tabs (Clean Rectangular Options, 4px radius) */}
+          {/* Role Selection Tabs (Officer & Admin) */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-[#1A1A1A] block">
               Select Role
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {[
-                { id: 'user', label: 'User', desc: 'Citizen' },
-                { id: 'officer', label: 'Officer', desc: 'Maintenance' },
-                { id: 'admin', label: 'Admin', desc: 'System' }
+                { id: 'officer', label: 'Officer', desc: 'Maintenance & Field' },
+                { id: 'admin', label: 'Admin', desc: 'System & Settings' }
               ].map((role) => {
                 const isSelected = selectedRole === role.id;
                 return (

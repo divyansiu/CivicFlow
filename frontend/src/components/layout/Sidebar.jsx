@@ -27,36 +27,23 @@ export const Sidebar = ({
   onCloseMobile
 }) => {
   const getNavItems = () => {
-    if (role === 'user') {
-      return [
-        { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-        { id: 'complaints', label: 'My Complaints', icon: AlertTriangle, count: 4 },
-        { id: 'map', label: 'Nearby Issues', icon: MapPin },
-        { id: 'updates', label: 'Maintenance Updates', icon: Wrench },
-        { id: 'info', label: 'Information', icon: FileText }
-      ];
-    }
-    
-    if (role === 'officer') {
+    if (role === 'admin') {
       return [
         { id: 'overview', label: 'Overview', icon: LayoutDashboard },
         { id: 'assets', label: 'Assets', icon: FolderOpen },
-        { id: 'priorities', label: 'Maintenance', icon: Wrench, count: stats?.criticalCount || 2 },
-        { id: 'reports', label: 'Reports', icon: FileText },
-        { id: 'map', label: 'Map View', icon: MapPin },
-        { id: 'notifications', label: 'Notifications', icon: Bell, count: 3 }
+        { id: 'officers', label: 'Field Officers', icon: Users, count: 3 },
+        { id: 'priorities', label: 'Maintenance Queue', icon: Wrench },
+        { id: 'parameters', label: 'System Settings', icon: SlidersHorizontal }
       ];
     }
 
-    // Admin
+    // Default: Officer
     return [
       { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-      { id: 'assets', label: 'Assets', icon: FolderOpen },
-      { id: 'users', label: 'Users', icon: Users },
-      { id: 'officers', label: 'Officers', icon: Users, count: 3 },
-      { id: 'priorities', label: 'Maintenance', icon: Wrench },
-      { id: 'reports', label: 'Reports', icon: FileText },
-      { id: 'parameters', label: 'System Settings', icon: SlidersHorizontal }
+      { id: 'assets', label: 'Asset Registry', icon: FolderOpen },
+      { id: 'priorities', label: 'Maintenance Queue', icon: Wrench, count: stats?.criticalCount || 2 },
+      { id: 'reports', label: 'Citizen Reports', icon: FileText },
+      { id: 'map', label: 'Map View', icon: MapPin }
     ];
   };
 

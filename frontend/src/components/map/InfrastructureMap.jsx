@@ -10,6 +10,7 @@ export const InfrastructureMap = ({
   selectedAssetId,
   onSelectAsset,
   height = '500px',
+  userCoords,
 }) => {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -55,12 +56,14 @@ export const InfrastructureMap = ({
     if (!mapContainerRef.current) return;
 
     if (!mapInstanceRef.current) {
-      // Default center: NCR / North Zone or Bangalore
-      const defaultCenter = [28.5355, 77.3910];
+      // Default center: User location if provided, else central fallback
+      const defaultCenter = (userCoords && Array.isArray(userCoords) && userCoords.length === 2 && !isNaN(userCoords[0]))
+        ? userCoords
+        : [28.5355, 77.3910];
 
       const map = L.map(mapContainerRef.current, {
         center: defaultCenter,
-        zoom: 11,
+        zoom: userCoords ? 13 : 11,
         zoomControl: false, // We'll add custom styled controls or default
         attributionControl: false,
       });
@@ -210,7 +213,7 @@ export const InfrastructureMap = ({
             font-weight: 600;
             cursor: pointer;
           ">
-            Inspect Decision Details →
+            View Asset Details →
           </button>
         </div>
       `;
@@ -237,6 +240,59 @@ export const InfrastructureMap = ({
       }
     });
 
+    // Add User Current Location Pin if available
+    if (userCoords && Array.isArray(userCoords) && userCoords.length === 2 && !isNaN(userCoords[0]) && !isNaN(userCoords[1])) {
+      bounds.push(userCoords);
+      const userHtml = `
+        <div style="position: relative; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+          <div style="
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: #2563EB;
+            border: 3px solid white;
+            box-shadow: 0 0 0 5px rgba(37,99,235,0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <div style="width: 7px; height: 7px; border-radius: 50%; background-color: white;"></div>
+          </div>
+          <div style="
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1E40AF;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            white-space: nowrap;
+            margin-bottom: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+          ">
+            📍 You Are Here
+          </div>
+        </div>
+      `;
+      const userIcon = L.divIcon({
+        className: 'user-gps-marker',
+        html: userHtml,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+      });
+      const userMarker = L.marker(userCoords, { icon: userIcon, zIndexOffset: 2000 });
+      userMarker.bindPopup(`
+        <div style="font-family: inherit; font-size: 12px; padding: 2px;">
+          <strong style="color: #1E40AF;">📍 Your Real-Time Location</strong>
+          <p style="margin: 4px 0 0; color: #555; font-size: 11px;">Active GPS coordinates detected by browser</p>
+        </div>
+      `);
+      markersGroup.addLayer(userMarker);
+    }
+
     // Fit map bounds to encompass all visible markers
     if (bounds.length > 0) {
       try {
@@ -246,7 +302,7 @@ export const InfrastructureMap = ({
         console.warn('Could not fit map bounds:', err);
       }
     }
-  }, [visibleAssets, selectedAssetId, mapReady]);
+  }, [visibleAssets, selectedAssetId, mapReady, userCoords]);
 
   // Pan to selected asset if selection changes
   useEffect(() => {
@@ -281,10 +337,10 @@ export const InfrastructureMap = ({
         <div className="flex items-center space-x-2">
           <MapPin className="w-4 h-4 text-[#168A44]" />
           <span className="font-semibold text-[#1A1A1A]">
-            Geospatial Infrastructure Map
+            Infrastructure Map
           </span>
-          <span className="text-xs text-[#5F6368] font-mono">
-            ({visibleAssets.length} mapped assets)
+          <span className="text-xs text-[#5F6368]">
+            ({visibleAssets.length} assets)
           </span>
         </div>
 

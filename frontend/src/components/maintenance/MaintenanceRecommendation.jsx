@@ -13,7 +13,7 @@ export const MaintenanceRecommendation = ({ asset, onSimulate, onExecuteAction }
       <div className="flex items-start justify-between">
         <div>
           <span className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block">
-            Decision Recommendation
+            Recommended Action
           </span>
           <h3 className="text-base font-bold text-[#1A1A1A] mt-1">
             {action}
@@ -32,7 +32,6 @@ export const MaintenanceRecommendation = ({ asset, onSimulate, onExecuteAction }
             <span className="font-semibold text-[#1A1A1A]">
               {asset.risk_level === 'CRITICAL' ? 'Within 48-72 Hours' : asset.risk_level === 'HIGH' ? 'Within 7 Days' : 'Next Routine Cycle (30 Days)'}
             </span>
-            <span className="text-[10px] text-[#5F6368] block mt-0.5 italic">Prototype policy rule</span>
           </div>
         </div>
 
@@ -43,7 +42,6 @@ export const MaintenanceRecommendation = ({ asset, onSimulate, onExecuteAction }
             <span className="font-semibold text-[#1A1A1A]">
               {asset.cost_estimate_band || (asset.risk_level === 'CRITICAL' ? 'Band 3 (₹4.2L - ₹6.5L)' : 'Band 2 (₹1.5L - ₹3.0L)')}
             </span>
-            <span className="text-[10px] text-[#5F6368] block mt-0.5 italic">Estimated budget impact</span>
           </div>
         </div>
       </div>
@@ -54,7 +52,7 @@ export const MaintenanceRecommendation = ({ asset, onSimulate, onExecuteAction }
             onClick={() => onSimulate(asset)}
             className="px-3 py-1.5 rounded text-xs font-medium bg-[#F7F8FA] text-[#168A44] border border-[#168A44] hover:bg-emerald-50 transition-colors"
           >
-            Run What-If Simulation
+            Simulate Repair Impact
           </button>
         )}
         {onExecuteAction && (

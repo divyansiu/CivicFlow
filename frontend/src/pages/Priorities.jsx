@@ -56,20 +56,20 @@ export const Priorities = ({ onSelectAsset }) => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">
-              Operational Maintenance Priority Queue
+              Maintenance Priority Queue
             </h1>
             {isLive ? (
               <span className="text-[10px] font-semibold bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded border border-emerald-300">
-                Live Backend API
+                Connected
               </span>
             ) : (
-              <span className="text-[10px] font-semibold bg-amber-100 text-amber-800 px-2 py-0.5 rounded border border-amber-300">
-                Prototype Seed
+              <span className="text-[10px] font-semibold bg-gray-100 text-[#5F6368] px-2 py-0.5 rounded border border-gray-300">
+                Offline Records
               </span>
             )}
           </div>
           <p className="text-xs text-[#5F6368] mt-0.5">
-            Strict descending order by Composite Priority Score (0.50 Risk + 0.25 Urgency + 0.25 Impact)
+            Ranked by Priority Score (50% Risk, 25% Urgency, 25% Impact)
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export const Priorities = ({ onSelectAsset }) => {
             className="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold bg-[#126B37] text-white hover:bg-[#0E522A] rounded shadow-xs transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>{simulationActive ? 'Simulating...' : 'Simulate #1 Intervention'}</span>
+            <span>{simulationActive ? 'Simulating...' : 'Simulate #1 Repair'}</span>
           </button>
           <button
             onClick={loadPriorities}

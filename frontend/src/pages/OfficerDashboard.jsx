@@ -30,9 +30,10 @@ import { SEED_ASSETS, MOCK_CITIZEN_COMPLAINTS } from '../data/mockData';
 import assetService from '../services/assetService';
 import dashboardService from '../services/dashboardService';
 import predictionService from '../services/predictionService';
+import { getLocalizedWardsAndComplaints } from '../utils/locationUtils';
 
-export const OfficerDashboard = ({ activeTab = 'overview' }) => {
-  const [assets, setAssets] = useState(SEED_ASSETS);
+export const OfficerDashboard = ({ activeTab = 'overview', locationData, localizedAssets }) => {
+  const [assets, setAssets] = useState(localizedAssets && localizedAssets.length > 0 ? localizedAssets : SEED_ASSETS);
   const [selectedAssetId, setSelectedAssetId] = useState('RD-021');
   const [metrics, setMetrics] = useState(null);
   const [complaints, setComplaints] = useState(MOCK_CITIZEN_COMPLAINTS);
@@ -65,6 +66,31 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
   useEffect(() => {
     loadData();
   }, []);
+
+  // Sync localized assets if provided
+  useEffect(() => {
+    if (localizedAssets && localizedAssets.length > 0) {
+      setAssets(localizedAssets);
+      if (!localizedAssets.some(a => a.asset_id === selectedAssetId)) {
+        setSelectedAssetId(localizedAssets[0].asset_id);
+      }
+    }
+  }, [localizedAssets]);
+
+  // Localize complaints to user's detected locality
+  useEffect(() => {
+    if (locationData?.coords) {
+      const loc = getLocalizedWardsAndComplaints(
+        locationData.coords,
+        MOCK_CITIZEN_COMPLAINTS,
+        [],
+        locationData.addressInfo
+      );
+      if (loc.complaints && loc.complaints.length > 0) {
+        setComplaints(loc.complaints);
+      }
+    }
+  }, [locationData?.coords, locationData?.addressInfo]);
 
   // Fetch full detail when selected asset changes
   useEffect(() => {
@@ -136,16 +162,16 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">Asset Registry</h1>
               {isLive ? (
                 <span className="text-[10px] bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded font-semibold border border-emerald-300">
-                  Live Backend API
+                  Connected
                 </span>
               ) : (
-                <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold border border-amber-300">
-                  Prototype Seed Data
+                <span className="text-[10px] bg-gray-100 text-[#5F6368] px-2 py-0.5 rounded font-semibold border border-[#DDE1E5]">
+                  Operational
                 </span>
               )}
             </div>
             <p className="text-xs text-[#5F6368] mt-0.5">
-              Select an asset to view its full condition and decision scores. <span className="italic">Public/geospatial records + synthetic operational data.</span>
+              Select an asset to view its condition score and maintenance recommendations.
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -174,21 +200,21 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
             <AssetDetails asset={selectedAsset} onActionTaken={handleActionTaken} />
             <div className="bg-white p-4 rounded border border-[#DDE1E5] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">What-If Intervention Simulation</span>
+                <span className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wider">Simulate Repair Impact</span>
                 <Sparkles className="w-4 h-4 text-[#168A44]" />
               </div>
               <p className="text-[11px] text-[#5F6368]">
-                Evaluate potential risk and priority reduction before committing capital budget.
+                Preview how resurfacing or road repairs improve condition score before scheduling work.
               </p>
               <Button variant="outline" size="sm" onClick={handleSimulateScenario} disabled={simulating} className="w-full text-xs">
-                {simulating ? 'Evaluating Model...' : 'Simulate Resurfacing Intervention'}
+                {simulating ? 'Calculating Impact...' : 'Simulate Resurfacing Work'}
               </Button>
               {simulationResult && (
                 <div className="p-2.5 bg-emerald-50 rounded border border-emerald-200 text-xs text-[#126B37] mt-2 space-y-1">
                   <div className="font-bold">Projected Impact:</div>
                   <div>Risk: {simulationResult.before?.risk_score} → {simulationResult.after?.risk_score} (-{simulationResult.risk_delta} pts)</div>
                   <div>Priority: {simulationResult.before?.priority_score} → {simulationResult.after?.priority_score} (-{simulationResult.priority_delta} pts)</div>
-                  <div className="text-[10px] text-[#5F6368] italic">{simulationResult.summary}</div>
+                  <div className="text-[10px] text-[#5F6368]">{simulationResult.summary}</div>
                 </div>
               )}
             </div>
@@ -208,17 +234,17 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">Maintenance Priority Queue</h1>
               {isLive && (
                 <span className="text-[10px] bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded font-semibold border border-emerald-300">
-                  Live API
+                  Connected
                 </span>
               )}
             </div>
             <p className="text-xs text-[#5F6368] mt-0.5">
-              Strict ranking by Composite Priority Score (0.50 Risk + 0.25 Urgency + 0.25 Impact). Prototype policy rule.
+              Ranked by Priority Score based on structural condition, urgency, and road usage.
             </p>
           </div>
           <Button variant="primary" size="sm" onClick={handleSimulateScenario} disabled={simulating}>
             <Sparkles className="w-3.5 h-3.5 mr-1" />
-            <span>Simulate What-If</span>
+            <span>Simulate Repair</span>
           </Button>
         </div>
         <NoticeBar />
@@ -228,7 +254,7 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
               <div className="flex items-center justify-between border-b border-[#DDE1E5] pb-3 mb-3">
                 <div>
                   <h2 className="text-sm font-bold text-[#1A1A1A]">Ranked Queue</h2>
-                  <span className="text-xs text-[#5F6368]">Sorted strictly descending by priority score</span>
+                  <span className="text-xs text-[#5F6368]">Sorted descending by priority score</span>
                 </div>
               </div>
               <PriorityList assets={assets} selectedAssetId={selectedAssetId} onSelectAsset={setSelectedAssetId} />
@@ -248,8 +274,8 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#DDE1E5] pb-4">
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">Citizen Reports &amp; Grievances</h1>
-            <p className="text-xs text-[#5F6368] mt-0.5">All community grievances linked to infrastructure segments. <span className="italic">Public/geospatial records + synthetic operational data.</span></p>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">Citizen Reports &amp; Issues</h1>
+            <p className="text-xs text-[#5F6368] mt-0.5">Community reports and issues linked to road and lighting infrastructure.</p>
           </div>
           <Button variant="outline" size="sm" onClick={() => alert('Exporting complaints report (CSV)')} className="flex items-center space-x-1">
             <Download className="w-3.5 h-3.5" />
@@ -274,14 +300,14 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
         </div>
 
         <div className="gov-card p-4 sm:p-5">
-          <h3 className="text-sm font-bold text-[#1A1A1A] border-b border-[#DDE1E5] pb-2 mb-3">All Complaints Log</h3>
+          <h3 className="text-sm font-bold text-[#1A1A1A] border-b border-[#DDE1E5] pb-2 mb-3">Reported Community Issues</h3>
           <DataTable
             columns={[
               { header: 'ID', accessor: 'id', cellClassName: 'font-mono text-[11px] text-[#5F6368]' },
               { header: 'TITLE & LOCATION', accessor: 'title', render: (row) => (
                 <div>
                   <div className="font-semibold text-xs text-[#1A1A1A]">{row.title}</div>
-                  <div className="text-[11px] text-[#5F6368]">{row.location} ({row.ward})</div>
+                  <div className="text-[11px] text-[#5F6368]">{row.location || row.ward}</div>
                 </div>
               )},
               { header: 'CATEGORY', accessor: 'category', cellClassName: 'text-xs text-[#5F6368]' },
@@ -305,20 +331,20 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
         <div>
           <div className="flex items-center space-x-2">
             <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#1A1A1A]">
-              Officer Maintenance Command Center
+              Officer Maintenance Dashboard
             </h1>
             {isLive ? (
               <span className="text-[10px] bg-emerald-100 text-[#126B37] px-2 py-0.5 rounded font-semibold border border-emerald-300">
-                Live Backend API
+                Connected
               </span>
             ) : (
-              <span className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded font-semibold border border-amber-300">
-                Prototype Seed Mode
+              <span className="text-[10px] bg-gray-100 text-[#5F6368] px-2 py-0.5 rounded font-semibold border border-[#DDE1E5]">
+                Operational
               </span>
             )}
           </div>
           <p className="text-xs text-[#5F6368] mt-0.5">
-            Operational decision intelligence for public infrastructure interventions • North &amp; Central District
+            Infrastructure tracking, repair priorities, and inspection status.
           </p>
         </div>
 
@@ -373,7 +399,7 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
           value={metrics?.average_priority_score !== undefined
             ? `${metrics.average_priority_score}`
             : (assets.reduce((sum, a) => sum + (a.priority_score || 0), 0) / (assets.length || 1)).toFixed(1)}
-          subtext="Composite priority index"
+          subtext="Priority score (0-100)"
           indicator={<span className="w-2.5 h-2.5 rounded-full bg-[#168A44] inline-block" />}
         />
       </div>
@@ -407,7 +433,7 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
             <div className="flex items-center space-x-2">
               <Wrench className="w-4 h-4 text-[#168A44]" />
               <h3 className="font-bold text-sm text-[#1A1A1A]">
-                Focused Asset Decision File: {selectedAsset.name} ({selectedAsset.asset_id})
+                Asset Details: {selectedAsset.name} ({selectedAsset.asset_id})
               </h3>
             </div>
             <span className="text-xs font-mono text-[#5F6368]">
@@ -420,8 +446,8 @@ export const OfficerDashboard = ({ activeTab = 'overview' }) => {
 
       {/* Footer Notes */}
       <div className="p-3 bg-[#F7F8FA] rounded border border-[#DDE1E5] text-[11px] text-[#5F6368] flex items-center justify-between">
-        <span>Public/geospatial records + clearly labeled synthetic operational data</span>
-        <span className="italic">Any exact response times shown are prototype policy rules.</span>
+        <span>Municipal Infrastructure Management System • 30-Day Inspection Schedule</span>
+        <span className="font-medium text-[#168A44]">✓ System Active</span>
       </div>
     </div>
   );

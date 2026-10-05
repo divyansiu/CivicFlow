@@ -18,7 +18,7 @@ export const PriorityScore = ({
       <div className="flex items-start justify-between">
         <div>
           <span className="text-[11px] font-semibold text-[#5F6368] uppercase tracking-wider block">
-            Composite Priority Score
+            Priority Score
           </span>
           <div className="flex items-baseline space-x-2 mt-1">
             <span className="text-3xl font-bold font-mono text-[#1A1A1A]">
@@ -39,7 +39,7 @@ export const PriorityScore = ({
 
       {/* Recommended Action */}
       <div className="p-2.5 bg-[#F7F8FA] rounded border border-[#DDE1E5] text-xs">
-        <span className="text-[#5F6368] block font-medium mb-0.5">Prototype Action Recommendation:</span>
+        <span className="text-[#5F6368] block font-medium mb-0.5">Recommended Action:</span>
         <span className="font-semibold text-[#1A1A1A]">{action}</span>
       </div>
 
@@ -52,8 +52,8 @@ export const PriorityScore = ({
           <span>+</span>
           <span>0.25 × Impact ({Number(impactScore).toFixed(0)})</span>
         </div>
-        <div className="text-[10px] italic text-[#5F6368]">
-          * Prototype policy weights (configurable design parameters)
+        <div className="text-[10px] text-[#5F6368]">
+          * Priority formula: 50% Risk, 25% Urgency, 25% Impact
         </div>
       </div>
     </div>

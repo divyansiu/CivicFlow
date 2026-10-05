@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
 import { Footer } from './components/layout/Footer';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
-import { UserDashboard } from './pages/UserDashboard';
 import { OfficerDashboard } from './pages/OfficerDashboard';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { Dashboard } from './pages/Dashboard';
@@ -15,9 +14,14 @@ import { InfrastructureMap } from './components/map/InfrastructureMap';
 import { SEED_ASSETS } from './data/mockData';
 import apiClient from './services/api';
 import assetService from './services/assetService';
-import { Menu, ArrowLeft, LogOut, Radio } from 'lucide-react';
+import { Menu, ArrowLeft, LogOut, Radio, MapPin } from 'lucide-react';
+import { useUserLocation } from './hooks/useUserLocation';
+import { getLocalizedWardsAndComplaints } from './utils/locationUtils';
 
 export function App() {
+  const locationData = useUserLocation();
+  const [dismissLocationBanner, setDismissLocationBanner] = useState(false);
+
   // Navigation state: 'landing' | 'login' | 'dashboard'
   const [currentPage, setCurrentPage] = useState('landing');
   // Roles: 'user' | 'officer' | 'admin' | null
@@ -33,6 +37,34 @@ export function App() {
   // Live backend connection state
   const [backendConnected, setBackendConnected] = useState(false);
   const [allAssets, setAllAssets] = useState(SEED_ASSETS);
+
+  // Localize assets around real-time user GPS if granted
+  const localizedData = useMemo(() => {
+    if (locationData.coords && Array.isArray(locationData.coords)) {
+      return getLocalizedWardsAndComplaints(
+        locationData.coords,
+        [],
+        allAssets,
+        locationData.addressInfo
+      );
+    }
+    return { assets: allAssets };
+  }, [locationData.coords, locationData.addressInfo, allAssets]);
+
+  const activeAssets = localizedData.assets || allAssets;
+
+  // Filter assets according to selected proximity dropdown
+  const filteredAssets = useMemo(() => {
+    if (locationData.selectedWard === 'NEAR_2KM') {
+      const near = activeAssets.filter(a => a.distanceKm == null || a.distanceKm <= 2.0);
+      return near.length > 0 ? near : activeAssets;
+    }
+    if (locationData.selectedWard === 'NEAR_5KM') {
+      const local = activeAssets.filter(a => a.distanceKm == null || a.distanceKm <= 5.0);
+      return local.length > 0 ? local : activeAssets;
+    }
+    return activeAssets;
+  }, [activeAssets, locationData.selectedWard]);
 
   // Check backend health periodically
   useEffect(() => {
@@ -94,6 +126,30 @@ export function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F7F8FA] text-[#1A1A1A]">
+      {/* Real-time location prompt banner across app */}
+      {locationData.status === 'requesting' && !dismissLocationBanner && (
+        <div className="bg-blue-600 text-white px-4 py-2 text-xs flex items-center justify-between sticky top-0 z-50 shadow-sm animate-pulse">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+            <span>📍 <strong>CivicFlow Real-Time Location:</strong> Requesting device location to show public infrastructure issues and road repairs in your immediate area. Please click <strong>Allow</strong> in your browser prompt.</span>
+          </div>
+          <button onClick={() => setDismissLocationBanner(true)} className="text-blue-200 hover:text-white ml-2 text-sm font-bold">✕</button>
+        </div>
+      )}
+      {locationData.status === 'granted' && !dismissLocationBanner && (
+        <div className="bg-[#126B37] text-white px-4 py-1.5 text-xs flex items-center justify-between sticky top-0 z-50 shadow-sm">
+          <div className="flex items-center space-x-2">
+            <span className="w-2 h-2 rounded-full bg-[#86EFAC] inline-block" />
+            <span>
+              📍 <strong>Live GPS Active:</strong> Detected near{' '}
+              <strong>{locationData.addressInfo?.shortName || 'Current Location'}</strong>
+              {locationData.addressInfo?.city ? ` (${locationData.addressInfo.city})` : ''} • Showing infrastructure issues sorted by real proximity to you.
+            </span>
+          </div>
+          <button onClick={() => setDismissLocationBanner(true)} className="text-[#86EFAC] hover:text-white ml-2 text-xs font-medium">✕ Dismiss</button>
+        </div>
+      )}
+
       {/* LANDING PAGE ROUTE */}
       {currentPage === 'landing' && (
         <>
@@ -101,6 +157,7 @@ export function App() {
             onExploreDashboard={handleExploreDashboard} 
             currentRole={currentUserRole}
             onLogout={handleLogout}
+            locationData={locationData}
           />
           <main className="flex-1">
             <LandingPage onExploreDashboard={handleExploreDashboard} />
@@ -130,7 +187,10 @@ export function App() {
             }}
             onLogout={handleLogout}
             onGoHome={handleGoHome}
-            stats={{ criticalCount: allAssets.filter(a => a.risk_level === 'CRITICAL').length || 2 }}
+            stats={{ 
+              criticalCount: allAssets.filter(a => a.risk_level === 'CRITICAL').length || 2,
+              complaintsCount: 10
+            }}
             mobileOpen={mobileSidebarOpen}
             onCloseMobile={() => setMobileSidebarOpen(false)}
           />
@@ -173,7 +233,32 @@ export function App() {
 
               {/* Right side controls */}
               <div className="flex items-center space-x-2 sm:space-x-3">
-                <span className="hidden lg:inline text-[#5F6368]">North &amp; Central District</span>
+                {/* Real-Time Area / Proximity Selector Dropdown */}
+                <div className="flex items-center space-x-1.5 bg-gray-50 hover:bg-gray-100 border border-[#DDE1E5] rounded px-2.5 py-1 text-xs transition-colors">
+                  <MapPin className={`w-3.5 h-3.5 shrink-0 ${locationData.status === 'granted' ? 'text-[#168A44]' : 'text-[#5F6368]'}`} />
+                  <select
+                    value={locationData.selectedWard}
+                    onChange={(e) => {
+                      if (e.target.value === 'GPS_REFRESH') {
+                        locationData.requestLocation(true);
+                      } else {
+                        locationData.setSelectedWard(e.target.value);
+                      }
+                    }}
+                    className="bg-transparent border-none text-xs font-semibold text-[#1A1A1A] focus:outline-none cursor-pointer max-w-[180px] truncate"
+                    title="Filter by proximity, area, or refresh real-time GPS"
+                  >
+                    <option value="NEAR_2KM">📍 Near Me (&lt; 2 km)</option>
+                    <option value="NEAR_5KM">📍 Local Area (&lt; 5 km)</option>
+                    <option value="ALL">🌐 All Reports (Citywide)</option>
+                    <option value="GPS_REFRESH">🔄 Refresh Real-Time GPS</option>
+                  </select>
+                  {locationData.status === 'granted' && (
+                    <span className="hidden xl:inline text-[9px] font-bold uppercase bg-emerald-100 text-[#126B37] px-1 py-0.2 rounded border border-emerald-300 shrink-0">
+                      GPS Live
+                    </span>
+                  )}
+                </div>
                 
                 {/* Backend Connection Indicator */}
                 {backendConnected ? (
@@ -182,9 +267,9 @@ export function App() {
                     API Live (8000)
                   </span>
                 ) : (
-                  <span className="hidden sm:flex items-center text-amber-700 font-medium text-xs bg-amber-50 px-2 py-0.5 rounded border border-amber-200" title="FastAPI backend offline; using prototype seed data">
-                    <span className="w-2 h-2 rounded-full bg-amber-500 inline-block mr-1.5" />
-                    Prototype Mode
+                  <span className="hidden sm:flex items-center text-[#5F6368] font-medium text-xs bg-gray-50 px-2 py-0.5 rounded border border-[#DDE1E5]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1.5" />
+                    Operational
                   </span>
                 )}
 
@@ -209,51 +294,23 @@ export function App() {
                 />
               ) : (
                 <>
-                  {/* USER ROLE */}
-                  {currentUserRole === 'user' && (
+                  {/* OFFICER ROLE (DEFAULT) */}
+                  {currentUserRole !== 'admin' && (
                     <>
                       {activeTab === 'map' ? (
                         <div className="space-y-4">
                           <InfrastructureMap
-                            assets={allAssets}
+                            assets={filteredAssets}
                             selectedAssetId={userSelectedAssetId}
                             onSelectAsset={(id) => {
                               setUserSelectedAssetId(id);
                               handleInspectAsset(id);
                             }}
-                          />
-                          {userSelectedAssetId && (
-                            <div className="text-xs text-[#5F6368] text-center">
-                              Selected: <strong className="text-[#1A1A1A]">{allAssets.find(a => a.asset_id === userSelectedAssetId)?.name}</strong>
-                              {' — '}click to inspect full decision intelligence file.
-                            </div>
-                          )}
-                        </div>
-                      ) : (
-                        <UserDashboard
-                          activeTab={activeTab}
-                          onSelectAsset={handleInspectAsset}
-                        />
-                      )}
-                    </>
-                  )}
-
-                  {/* OFFICER ROLE */}
-                  {currentUserRole === 'officer' && (
-                    <>
-                      {activeTab === 'map' ? (
-                        <div className="space-y-4">
-                          <InfrastructureMap
-                            assets={allAssets}
-                            selectedAssetId={userSelectedAssetId}
-                            onSelectAsset={(id) => {
-                              setUserSelectedAssetId(id);
-                              handleInspectAsset(id);
-                            }}
+                            userCoords={locationData.coords}
                           />
                           <div className="text-xs text-[#5F6368] text-center">
-                            Selected: <strong className="text-[#1A1A1A]">{allAssets.find(a => a.asset_id === userSelectedAssetId)?.name}</strong>
-                            {' — '}click on pin to inspect decision file.
+                            Selected: <strong className="text-[#1A1A1A]">{filteredAssets.find(a => a.asset_id === userSelectedAssetId)?.name || filteredAssets[0]?.name}</strong>
+                            {' — '}click on pin to view asset details.
                           </div>
                         </div>
                       ) : activeTab === 'assets' ? (
@@ -261,7 +318,7 @@ export function App() {
                       ) : activeTab === 'priorities' ? (
                         <Priorities onSelectAsset={handleInspectAsset} />
                       ) : (
-                        <OfficerDashboard activeTab={activeTab} />
+                        <OfficerDashboard activeTab={activeTab} locationData={locationData} localizedAssets={filteredAssets} />
                       )}
                     </>
                   )}

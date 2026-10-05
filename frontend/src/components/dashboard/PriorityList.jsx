@@ -67,7 +67,7 @@ export const PriorityList = ({ assets = [], selectedAssetId, onSelectAsset }) =>
       )
     },
     {
-      header: 'PROTOTYPE ACTION',
+      header: 'RECOMMENDED ACTION',
       accessor: 'recommended_action',
       render: (row) => (
         <div className="text-xs text-[#1A1A1A] max-w-[180px] truncate" title={row.recommended_action || getActionRecommendation(row.risk_level)}>
@@ -96,7 +96,7 @@ export const PriorityList = ({ assets = [], selectedAssetId, onSelectAsset }) =>
             onSelectAsset && onSelectAsset(row.asset_id);
           }}
           className="p-1 rounded hover:bg-gray-100 text-[#5F6368] hover:text-[#168A44] transition-colors"
-          title="View Asset Decision Details"
+          title="View Asset Details"
         >
           <ChevronRight className="w-4 h-4" />
         </button>
@@ -110,7 +110,7 @@ export const PriorityList = ({ assets = [], selectedAssetId, onSelectAsset }) =>
       <div className="p-4 border-b border-[#DDE1E5] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
           <AlertTriangle className="w-4 h-4 text-[#168A44]" />
-          <h2 className="font-bold text-sm text-[#1A1A1A]">Ranked Priority Maintenance Queue</h2>
+          <h2 className="font-bold text-sm text-[#1A1A1A]">Priority Maintenance Queue</h2>
           <span className="text-xs text-[#5F6368] font-mono">({filteredAssets.length} items)</span>
         </div>
 
@@ -144,8 +144,8 @@ export const PriorityList = ({ assets = [], selectedAssetId, onSelectAsset }) =>
       />
 
       <div className="p-2.5 bg-[#F7F8FA] border-t border-[#DDE1E5] text-[11px] text-[#5F6368] flex items-center justify-between">
-        <span>Formula: <strong>Priority = 0.50 × Risk + 0.25 × Urgency + 0.25 × Impact</strong> (Prototype policy weights)</span>
-        <span className="italic">Grounded decision support</span>
+        <span>Formula: <strong>Priority = 0.50 × Risk + 0.25 × Urgency + 0.25 × Impact</strong></span>
+        <span>Standard weights</span>
       </div>
     </div>
   );
