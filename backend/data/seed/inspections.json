@@ -1,0 +1,482 @@
+[
+  {
+    "inspection_id": "INS-0001",
+    "asset_id": "RD-0001",
+    "date": "2026-08-25",
+    "score": 66.4,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for MG Road (RD-0001). Visual distress score: 66.4."
+  },
+  {
+    "inspection_id": "INS-0002",
+    "asset_id": "RD-0002",
+    "date": "2026-08-03",
+    "score": 45.0,
+    "defect_type": "Minor Surface Wear",
+    "notes": "Inspection completed for Outer Ring Road (RD-0002). Visual distress score: 45.0."
+  },
+  {
+    "inspection_id": "INS-0003",
+    "asset_id": "RD-0003",
+    "date": "2026-08-24",
+    "score": 51.3,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Hosur Road (RD-0003). Visual distress score: 51.3."
+  },
+  {
+    "inspection_id": "INS-0004",
+    "asset_id": "RD-0004",
+    "date": "2026-08-10",
+    "score": 63.3,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Old Airport Road (RD-0004). Visual distress score: 63.3."
+  },
+  {
+    "inspection_id": "INS-0005",
+    "asset_id": "RD-0005",
+    "date": "2026-08-27",
+    "score": 65.6,
+    "defect_type": "Minor Surface Wear",
+    "notes": "Inspection completed for Bannerghatta Road (RD-0005). Visual distress score: 65.6."
+  },
+  {
+    "inspection_id": "INS-0006",
+    "asset_id": "RD-0006",
+    "date": "2026-08-15",
+    "score": 78.5,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Brigade Road (RD-0006). Visual distress score: 78.5."
+  },
+  {
+    "inspection_id": "INS-0007",
+    "asset_id": "RD-0007",
+    "date": "2026-08-13",
+    "score": 28.7,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Sarjapur Road (RD-0007). Visual distress score: 28.7."
+  },
+  {
+    "inspection_id": "INS-0008",
+    "asset_id": "RD-0008",
+    "date": "2026-08-09",
+    "score": 48.9,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Kanakapura Road (RD-0008). Visual distress score: 48.9."
+  },
+  {
+    "inspection_id": "INS-0009",
+    "asset_id": "RD-0009",
+    "date": "2026-08-18",
+    "score": 68.0,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Whitefield Main Road (RD-0009). Visual distress score: 68.0."
+  },
+  {
+    "inspection_id": "INS-0010",
+    "asset_id": "RD-0010",
+    "date": "2026-08-13",
+    "score": 76.0,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Residency Road (RD-0010). Visual distress score: 76.0."
+  },
+  {
+    "inspection_id": "INS-0011",
+    "asset_id": "RD-0011",
+    "date": "2026-08-17",
+    "score": 78.2,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Bellary Road (RD-0011). Visual distress score: 78.2."
+  },
+  {
+    "inspection_id": "INS-0012",
+    "asset_id": "RD-0012",
+    "date": "2026-08-05",
+    "score": 70.4,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0012. Visual distress score: 70.4."
+  },
+  {
+    "inspection_id": "INS-0013",
+    "asset_id": "RD-0013",
+    "date": "2026-08-06",
+    "score": 83.5,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0013. Visual distress score: 83.5."
+  },
+  {
+    "inspection_id": "INS-0014",
+    "asset_id": "RD-0014",
+    "date": "2026-08-08",
+    "score": 53.8,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0014. Visual distress score: 53.8."
+  },
+  {
+    "inspection_id": "INS-0015",
+    "asset_id": "RD-0015",
+    "date": "2026-08-24",
+    "score": 58.6,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0015. Visual distress score: 58.6."
+  },
+  {
+    "inspection_id": "INS-0016",
+    "asset_id": "RD-0016",
+    "date": "2026-08-27",
+    "score": 86.5,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0016. Visual distress score: 86.5."
+  },
+  {
+    "inspection_id": "INS-0017",
+    "asset_id": "RD-0017",
+    "date": "2026-08-15",
+    "score": 77.7,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0017. Visual distress score: 77.7."
+  },
+  {
+    "inspection_id": "INS-0018",
+    "asset_id": "RD-0018",
+    "date": "2026-08-16",
+    "score": 54.0,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0018. Visual distress score: 54.0."
+  },
+  {
+    "inspection_id": "INS-0019",
+    "asset_id": "RD-0019",
+    "date": "2026-08-28",
+    "score": 48.9,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0019. Visual distress score: 48.9."
+  },
+  {
+    "inspection_id": "INS-0020",
+    "asset_id": "RD-0020",
+    "date": "2026-08-26",
+    "score": 58.0,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0020. Visual distress score: 58.0."
+  },
+  {
+    "inspection_id": "INS-0021",
+    "asset_id": "RD-0021",
+    "date": "2026-08-23",
+    "score": 71.1,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0021. Visual distress score: 71.1."
+  },
+  {
+    "inspection_id": "INS-0022",
+    "asset_id": "RD-0022",
+    "date": "2026-08-26",
+    "score": 59.9,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0022. Visual distress score: 59.9."
+  },
+  {
+    "inspection_id": "INS-0023",
+    "asset_id": "RD-0023",
+    "date": "2026-08-08",
+    "score": 40.4,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0023. Visual distress score: 40.4."
+  },
+  {
+    "inspection_id": "INS-0024",
+    "asset_id": "RD-0024",
+    "date": "2026-08-14",
+    "score": 43.0,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0024. Visual distress score: 43.0."
+  },
+  {
+    "inspection_id": "INS-0025",
+    "asset_id": "RD-0025",
+    "date": "2026-08-25",
+    "score": 22.3,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0025. Visual distress score: 22.3."
+  },
+  {
+    "inspection_id": "INS-0026",
+    "asset_id": "RD-0026",
+    "date": "2026-08-04",
+    "score": 40.5,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0026. Visual distress score: 40.5."
+  },
+  {
+    "inspection_id": "INS-0027",
+    "asset_id": "RD-0027",
+    "date": "2026-08-09",
+    "score": 32.8,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0027. Visual distress score: 32.8."
+  },
+  {
+    "inspection_id": "INS-0028",
+    "asset_id": "RD-0028",
+    "date": "2026-08-21",
+    "score": 87.8,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0028. Visual distress score: 87.8."
+  },
+  {
+    "inspection_id": "INS-0029",
+    "asset_id": "RD-0029",
+    "date": "2026-08-01",
+    "score": 79.3,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0029. Visual distress score: 79.3."
+  },
+  {
+    "inspection_id": "INS-0030",
+    "asset_id": "RD-0030",
+    "date": "2026-08-01",
+    "score": 36.6,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0030. Visual distress score: 36.6."
+  },
+  {
+    "inspection_id": "INS-0031",
+    "asset_id": "RD-0031",
+    "date": "2026-08-25",
+    "score": 76.0,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0031. Visual distress score: 76.0."
+  },
+  {
+    "inspection_id": "INS-0032",
+    "asset_id": "RD-0032",
+    "date": "2026-08-25",
+    "score": 47.8,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0032. Visual distress score: 47.8."
+  },
+  {
+    "inspection_id": "INS-0033",
+    "asset_id": "RD-0033",
+    "date": "2026-08-24",
+    "score": 67.8,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0033. Visual distress score: 67.8."
+  },
+  {
+    "inspection_id": "INS-0034",
+    "asset_id": "RD-0034",
+    "date": "2026-08-07",
+    "score": 31.0,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0034. Visual distress score: 31.0."
+  },
+  {
+    "inspection_id": "INS-0035",
+    "asset_id": "RD-0035",
+    "date": "2026-08-27",
+    "score": 68.4,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0035. Visual distress score: 68.4."
+  },
+  {
+    "inspection_id": "INS-0036",
+    "asset_id": "RD-0036",
+    "date": "2026-08-14",
+    "score": 53.6,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0036. Visual distress score: 53.6."
+  },
+  {
+    "inspection_id": "INS-0037",
+    "asset_id": "RD-0037",
+    "date": "2026-08-12",
+    "score": 47.0,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0037. Visual distress score: 47.0."
+  },
+  {
+    "inspection_id": "INS-0038",
+    "asset_id": "RD-0038",
+    "date": "2026-08-03",
+    "score": 68.8,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0038. Visual distress score: 68.8."
+  },
+  {
+    "inspection_id": "INS-0039",
+    "asset_id": "RD-0039",
+    "date": "2026-08-14",
+    "score": 76.8,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0039. Visual distress score: 76.8."
+  },
+  {
+    "inspection_id": "INS-0040",
+    "asset_id": "RD-0040",
+    "date": "2026-08-13",
+    "score": 39.9,
+    "defect_type": "Minor Surface Wear",
+    "notes": "Inspection completed for Road Segment RD-0040. Visual distress score: 39.9."
+  },
+  {
+    "inspection_id": "INS-0041",
+    "asset_id": "RD-0041",
+    "date": "2026-08-02",
+    "score": 47.9,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0041. Visual distress score: 47.9."
+  },
+  {
+    "inspection_id": "INS-0042",
+    "asset_id": "RD-0042",
+    "date": "2026-08-07",
+    "score": 66.4,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0042. Visual distress score: 66.4."
+  },
+  {
+    "inspection_id": "INS-0043",
+    "asset_id": "RD-0043",
+    "date": "2026-08-03",
+    "score": 56.2,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0043. Visual distress score: 56.2."
+  },
+  {
+    "inspection_id": "INS-0044",
+    "asset_id": "RD-0044",
+    "date": "2026-08-19",
+    "score": 53.1,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0044. Visual distress score: 53.1."
+  },
+  {
+    "inspection_id": "INS-0045",
+    "asset_id": "RD-0045",
+    "date": "2026-08-13",
+    "score": 53.5,
+    "defect_type": "Minor Surface Wear",
+    "notes": "Inspection completed for Road Segment RD-0045. Visual distress score: 53.5."
+  },
+  {
+    "inspection_id": "INS-0046",
+    "asset_id": "RD-0046",
+    "date": "2026-08-04",
+    "score": 94.0,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0046. Visual distress score: 94.0."
+  },
+  {
+    "inspection_id": "INS-0047",
+    "asset_id": "RD-0047",
+    "date": "2026-08-02",
+    "score": 58.8,
+    "defect_type": "Minor Surface Wear",
+    "notes": "Inspection completed for Road Segment RD-0047. Visual distress score: 58.8."
+  },
+  {
+    "inspection_id": "INS-0048",
+    "asset_id": "RD-0048",
+    "date": "2026-08-13",
+    "score": 35.2,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0048. Visual distress score: 35.2."
+  },
+  {
+    "inspection_id": "INS-0049",
+    "asset_id": "RD-0049",
+    "date": "2026-08-15",
+    "score": 79.3,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0049. Visual distress score: 79.3."
+  },
+  {
+    "inspection_id": "INS-0050",
+    "asset_id": "RD-0050",
+    "date": "2026-08-15",
+    "score": 55.2,
+    "defect_type": "Alligator Cracking",
+    "notes": "Inspection completed for Road Segment RD-0050. Visual distress score: 55.2."
+  },
+  {
+    "inspection_id": "INS-0051",
+    "asset_id": "RD-0051",
+    "date": "2026-08-28",
+    "score": 65.4,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0051. Visual distress score: 65.4."
+  },
+  {
+    "inspection_id": "INS-0052",
+    "asset_id": "RD-0052",
+    "date": "2026-08-27",
+    "score": 93.5,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0052. Visual distress score: 93.5."
+  },
+  {
+    "inspection_id": "INS-0053",
+    "asset_id": "RD-0053",
+    "date": "2026-08-22",
+    "score": 86.9,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0053. Visual distress score: 86.9."
+  },
+  {
+    "inspection_id": "INS-0054",
+    "asset_id": "RD-0054",
+    "date": "2026-08-03",
+    "score": 91.9,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0054. Visual distress score: 91.9."
+  },
+  {
+    "inspection_id": "INS-0055",
+    "asset_id": "RD-0055",
+    "date": "2026-08-22",
+    "score": 60.4,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0055. Visual distress score: 60.4."
+  },
+  {
+    "inspection_id": "INS-0056",
+    "asset_id": "RD-0056",
+    "date": "2026-08-19",
+    "score": 54.2,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0056. Visual distress score: 54.2."
+  },
+  {
+    "inspection_id": "INS-0057",
+    "asset_id": "RD-0057",
+    "date": "2026-08-10",
+    "score": 31.5,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0057. Visual distress score: 31.5."
+  },
+  {
+    "inspection_id": "INS-0058",
+    "asset_id": "RD-0058",
+    "date": "2026-08-07",
+    "score": 62.1,
+    "defect_type": "Longitudinal Cracks",
+    "notes": "Inspection completed for Road Segment RD-0058. Visual distress score: 62.1."
+  },
+  {
+    "inspection_id": "INS-0059",
+    "asset_id": "RD-0059",
+    "date": "2026-08-10",
+    "score": 91.2,
+    "defect_type": "Normal Aging",
+    "notes": "Inspection completed for Road Segment RD-0059. Visual distress score: 91.2."
+  },
+  {
+    "inspection_id": "INS-0060",
+    "asset_id": "RD-0060",
+    "date": "2026-08-02",
+    "score": 49.8,
+    "defect_type": "Severe Potholes",
+    "notes": "Inspection completed for Road Segment RD-0060. Visual distress score: 49.8."
+  }
+]
