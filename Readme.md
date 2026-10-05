@@ -1,14 +1,17 @@
-# CivicFlow
-
+# 🚧 CivicFlow
 ### AI-Powered Predictive Maintenance for Public Infrastructure
 
 CivicFlow is an **AI-powered predictive maintenance platform** designed to help authorities identify infrastructure assets that are likely to require maintenance and prioritize them based on **risk, urgency, and public impact**.
 
 Instead of waiting for infrastructure to fail or relying only on reactive complaints, CivicFlow combines infrastructure condition, maintenance history, complaints, inspections, and other relevant signals to provide **data-driven maintenance priorities**.
 
+<img width="1919" height="790" alt="image" src="https://github.com/user-attachments/assets/ec0d25f9-85a7-41bf-93e2-1019d0442f11" />
+<img width="1919" height="921" alt="image" src="https://github.com/user-attachments/assets/c47c65ae-2a85-4f06-96fb-947a17016056" />
+<img width="1919" height="928" alt="image" src="https://github.com/user-attachments/assets/1f8c7b31-8322-473b-b41e-323318ed2fdf" />
+
 ---
 
-## 🚧 Problem
+# 🚨 Problem
 
 Public infrastructure such as:
 
@@ -37,11 +40,11 @@ to:
 
 ---
 
-## 💡 Our Solution
+# 💡 Our Solution
 
 CivicFlow analyzes infrastructure-related data and produces an actionable maintenance priority for each asset.
 
-### Core workflow
+## Core Workflow
 
 ```text
 Infrastructure Data
@@ -71,9 +74,9 @@ It also answers:
 
 ---
 
-## 🎯 Key Features
+# 🎯 Key Features
 
-### 1. Infrastructure Asset Registry
+## 1. Infrastructure Asset Registry
 
 Maintain information about infrastructure assets including:
 
@@ -86,7 +89,7 @@ Maintain information about infrastructure assets including:
 
 ---
 
-### 2. Predictive Risk Scoring
+## 2. Predictive Risk Scoring
 
 The ML system analyzes relevant infrastructure features and estimates the likelihood that an asset requires maintenance.
 
@@ -99,7 +102,7 @@ Risk Level: CRITICAL
 
 ---
 
-### 3. Urgency Scoring
+## 3. Urgency Scoring
 
 Determines how quickly an asset may require attention based on factors such as:
 
@@ -111,7 +114,7 @@ Determines how quickly an asset may require attention based on factors such as:
 
 ---
 
-### 4. Impact Scoring
+## 4. Impact Scoring
 
 Estimates the potential public impact associated with an infrastructure asset.
 
@@ -124,7 +127,7 @@ For example:
 
 ---
 
-### 5. Maintenance Priority
+## 5. Maintenance Priority
 
 CivicFlow combines risk, urgency, and impact to create a prioritized maintenance queue.
 
@@ -143,7 +146,7 @@ This helps decision-makers focus limited resources on the assets requiring the m
 
 ---
 
-### 6. Explainable Predictions
+## 6. Explainable Predictions
 
 CivicFlow provides understandable reasons behind a high-risk prediction.
 
@@ -159,11 +162,11 @@ Why is RD-102 high risk?
 ✓ High public/traffic impact
 ```
 
-This makes the prediction easier for authorities and judges to understand and trust.
+This makes the prediction easier for authorities and evaluators to understand and trust.
 
 ---
 
-### 7. GIS Infrastructure Map
+## 7. GIS Infrastructure Map
 
 Infrastructure assets can be visualized geographically using:
 
@@ -183,7 +186,7 @@ This provides a geographical view of infrastructure risk.
 
 ---
 
-### 8. Maintenance History
+## 8. Maintenance History
 
 The platform can display historical maintenance activity associated with an infrastructure asset.
 
@@ -191,7 +194,7 @@ This helps identify assets with recurring maintenance problems.
 
 ---
 
-### 9. Maintenance Recommendations
+## 9. Maintenance Recommendations
 
 Based on the asset's risk and priority, CivicFlow can provide actionable recommendations such as:
 
@@ -218,7 +221,7 @@ The model can use infrastructure-related features such as:
 - Usage/traffic indicators
 - Infrastructure-specific attributes
 
-The prediction pipeline is:
+## Prediction Pipeline
 
 ```text
 Raw Infrastructure Data
@@ -239,45 +242,73 @@ The ML model is integrated directly into the FastAPI backend.
 # 🏗️ System Architecture
 
 ```text
-                    DATA SOURCES
-                         │
-                         ▼
-                ┌─────────────────┐
-                │    SQLite DB    │
-                └────────┬────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │ Feature Engineering │
-              └──────────┬──────────┘
-                         │
-                         ▼
-              ┌─────────────────────┐
-              │   Random Forest ML  │
-              └──────────┬──────────┘
-                         │
-                         ▼
-                    Risk Score
-                         │
-              ┌──────────┼──────────┐
-              ▼          ▼          ▼
-           Urgency     Impact     History
-              │          │          │
-              └──────────┼──────────┘
-                         ▼
-                Priority Engine
-                         │
-                         ▼
-              Explanation Engine
-                         │
-                         ▼
-                   FastAPI API
-                         │
-                         ▼
-                 React Frontend
-                    │         │
-                    ▼         ▼
-                Dashboard   GIS Map
+                     DATA SOURCES
+                          │
+                          ▼
+                  ┌─────────────────┐
+                  │    SQLite DB    │
+                  └────────┬────────┘
+                           │
+                           ▼
+                ┌─────────────────────┐
+                │ Feature Engineering │
+                └──────────┬──────────┘
+                           │
+                           ▼
+                ┌─────────────────────┐
+                │   Random Forest ML  │
+                └──────────┬──────────┘
+                           │
+                           ▼
+                       Risk Score
+                           │
+                 ┌─────────┼─────────┐
+                 ▼         ▼         ▼
+              Urgency    Impact    History
+                 │         │         │
+                 └─────────┼─────────┘
+                           ▼
+                    Priority Engine
+                           │
+                           ▼
+                    Explanation Engine
+                           │
+                           ▼
+                       FastAPI API
+                           │
+                           ▼
+                      React Frontend
+                         │       │
+                         ▼       ▼
+                    Dashboard  GIS Map
+```
+
+---
+
+# 🔄 End-to-End Application Flow
+
+A typical CivicFlow workflow is:
+
+```text
+1. Infrastructure data enters the system
+                    ↓
+2. Data is processed and features are generated
+                    ↓
+3. ML model predicts maintenance risk
+                    ↓
+4. Risk score is calculated
+                    ↓
+5. Urgency is evaluated
+                    ↓
+6. Potential public impact is evaluated
+                    ↓
+7. Priority score is generated
+                    ↓
+8. Reasons behind the prediction are generated
+                    ↓
+9. Maintenance recommendation is produced
+                    ↓
+10. Result appears on the dashboard and GIS map
 ```
 
 ---
@@ -313,7 +344,7 @@ The ML model is integrated directly into the FastAPI backend.
 
 SQLite is used for the MVP because it provides **zero database setup and fast local development**.
 
-For a production deployment, the architecture can be migrated to a persistent database such as PostgreSQL/PostGIS.
+For production deployment, the architecture can be migrated to a persistent database such as PostgreSQL/PostGIS.
 
 ## Deployment
 
@@ -370,7 +401,7 @@ predictive-maintenance/
 └── LICENSE
 ```
 
-### ML organization
+## ML Organization
 
 The repository separates ML experimentation from production application code:
 
@@ -388,31 +419,248 @@ This prevents experimentation code from being mixed with the application's runti
 
 ---
 
-# 🔄 Application Flow
+# ⚙️ Technical Installation & Setup
 
-A typical CivicFlow workflow:
+Follow the steps below to run CivicFlow locally.
+
+## Prerequisites
+
+Make sure the following are installed:
+
+- **Python 3**
+- **Node.js + npm**
+- **Git**
+
+Verify the installations:
+
+```bash
+python --version
+node --version
+npm --version
+git --version
+```
+
+---
+
+# Step 1: Clone the Repository
+
+```bash
+git clone <YOUR_REPOSITORY_URL>
+cd predictive-maintenance
+```
+
+---
+
+# Step 2: Backend Setup
+
+## 1. Navigate to the backend directory
+
+```bash
+cd backend
+```
+
+## 2. Create and activate a virtual environment
+
+### Windows PowerShell
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+If PowerShell blocks activation:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+Then activate again:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### macOS / Linux
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+## 3. Install Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+## 4. Initialize and seed the SQLite database
+
+The SQLite database initializes and can seed the application data during startup.
+
+You can also initialize it manually:
+
+```bash
+python -c "from app.database import init_db; init_db()"
+```
+
+The current seed data contains **60 Bengaluru road assets and operational logs**.
+
+## 5. Start the FastAPI backend
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+Backend API:
 
 ```text
-1. Infrastructure data enters the system
-                    ↓
-2. Data is processed and features are generated
-                    ↓
-3. ML model predicts maintenance risk
-                    ↓
-4. Risk score is calculated
-                    ↓
-5. Urgency is evaluated
-                    ↓
-6. Potential public impact is evaluated
-                    ↓
-7. Priority score is generated
-                    ↓
-8. Reasons behind the prediction are generated
-                    ↓
-9. Maintenance recommendation is produced
-                    ↓
-10. Result appears on the dashboard and GIS map
+http://localhost:8000
 ```
+
+Swagger UI:
+
+```text
+http://localhost:8000/docs
+```
+
+---
+
+# Step 3: Frontend Setup
+
+Open a **new terminal window or tab**.
+
+## 1. Navigate to the frontend
+
+```bash
+cd frontend
+```
+
+## 2. Install dependencies
+
+```bash
+npm install
+```
+
+## 3. Start the Vite development server
+
+```bash
+npm run dev
+```
+
+Frontend application:
+
+```text
+http://localhost:5173
+```
+
+The frontend communicates with the FastAPI backend through the application's API endpoints.
+
+---
+
+# Step 4: Run the Complete System
+
+Run both servers.
+
+### Terminal 1 — Backend
+
+```bash
+cd backend
+```
+
+Activate the environment:
+
+**Windows:**
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+Then:
+
+```bash
+uvicorn app.main:app --reload --port 8000
+```
+
+### Terminal 2 — Frontend
+
+```bash
+cd frontend
+npm run dev
+```
+
+Access:
+
+```text
+Frontend → http://localhost:5173
+Backend  → http://localhost:8000
+Swagger  → http://localhost:8000/docs
+```
+
+---
+
+# 🔌 Technical Runtime Flow
+
+```text
+React Frontend
+      ↓
+FastAPI API
+      ↓
+Database / Services
+      ↓
+Feature Engineering
+      ↓
+Random Forest
+      ↓
+Risk Score
+      ↓
+Urgency + Impact
+      ↓
+Priority Engine
+      ↓
+Explanation + Recommendation
+      ↓
+JSON Response
+      ↓
+React Dashboard / GIS / Priority Queue
+```
+
+---
+
+# 🧪 Step 5: Running Tests
+
+To verify backend scoring engines, database persistence, and integration tests:
+
+```bash
+cd backend
+python -m pytest tests -v
+```
+
+A successful test run helps verify that the main backend components are working together correctly.
+
+---
+
+# 📡 Step 6: API Documentation
+
+After starting the backend, open:
+
+```text
+http://localhost:8000/docs
+```
+
+FastAPI provides interactive Swagger documentation for testing the backend endpoints.
+
+## Core API Endpoints
+
+```text
+GET  /api/dashboard
+GET  /api/assets
+GET  /api/assets/{id}
+GET  /api/assets/{id}/history
+GET  /api/priorities
+POST /api/predict
+```
+
+These APIs support the dashboard, asset details, history, priority queue, and prediction workflow.
 
 ---
 
@@ -420,7 +668,7 @@ A typical CivicFlow workflow:
 
 Consider a road asset:
 
-### Road RD-102
+## Road RD-102
 
 ```text
 Condition: Poor
@@ -440,7 +688,7 @@ Impact           → 94 / 100
 Priority         → CRITICAL
 ```
 
-### Recommendation
+## Recommendation
 
 > **Immediate inspection and preventive maintenance recommended.**
 
@@ -450,22 +698,22 @@ The decision is supported by the underlying infrastructure signals rather than p
 
 # 🌍 Scalability
 
-Although the initial MVP focuses on infrastructure types that can be demonstrated reliably within the hackathon, the architecture is designed to support additional infrastructure categories.
+Although the initial MVP focuses on infrastructure that can be demonstrated reliably within the hackathon, the architecture is designed to support additional infrastructure categories.
 
-Potential future expansion:
+Potential expansion:
 
 ```text
-                 CivicFlow
-                     │
-       ┌─────────────┼─────────────┐
-       ▼             ▼             ▼
-     Roads      Streetlights    Bridges
-       │             │             │
-       └─────────────┼─────────────┘
-                     │
-          ┌──────────┼──────────┐
-          ▼          ▼          ▼
-       Drainage     Water    Buildings
+                    CivicFlow
+                        │
+             ┌──────────┼──────────┐
+             ▼          ▼          ▼
+           Roads    Streetlights  Bridges
+             │          │          │
+             └──────────┼──────────┘
+                        │
+              ┌─────────┼─────────┐
+              ▼         ▼         ▼
+          Drainage     Water   Buildings
 ```
 
 The underlying architecture can remain consistent while infrastructure-specific features and prediction models are added.
@@ -493,20 +741,6 @@ These capabilities are considered future extensions beyond the initial MVP.
 
 ---
 
-# 🎯 Why CivicFlow?
-
-Traditional maintenance often asks:
-
-> **"What is already broken?"**
-
-CivicFlow aims to ask:
-
-> **"What is likely to need attention next, and what should we prioritize?"**
-
-By combining **prediction + explanation + prioritization**, CivicFlow aims to help infrastructure authorities make faster and more informed maintenance decisions.
-
----
-
 # ⚠️ MVP Philosophy
 
 CivicFlow follows a simple principle:
@@ -521,6 +755,42 @@ Rather than adding unnecessary complexity, the MVP prioritizes:
 - Clear visualization
 - Actionable recommendations
 - Strong demonstration value
+
+---
+
+# 🎯 Why CivicFlow?
+
+Traditional maintenance often asks:
+
+> **"What is already broken?"**
+
+CivicFlow aims to ask:
+
+> **"What is likely to need attention next, and what should we prioritize?"**
+
+By combining **prediction + explanation + prioritization**, CivicFlow aims to help infrastructure authorities make faster and more informed maintenance decisions.
+
+---
+
+# 🏁 Core Product Flow
+
+```text
+DATA
+  ↓
+PREDICT
+  ↓
+RISK
+  ↓
+URGENCY + IMPACT
+  ↓
+PRIORITY
+  ↓
+EXPLAIN
+  ↓
+RECOMMEND
+  ↓
+ACTION
+```
 
 ---
 
