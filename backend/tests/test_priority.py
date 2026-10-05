@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import pytest
 from fastapi.testclient import TestClient
 from backend.app.main import app
@@ -74,7 +73,8 @@ def test_priorities_invalid_params():
     response = client.get("/api/priorities?limit=-1")
     assert response.status_code == 422
     assert response.json()["error_code"] == "VALIDATION_ERROR"
-=======
+
+
 """
 Unit & Integration Tests for CivicFlow Priority Engine, Urgency Engine, Impact Engine,
 and Database Repositories.
@@ -218,4 +218,4 @@ def test_sqlite_database_lifecycle_and_seeding():
         assert len(history["maintenance_records"]) > 0
         assert len(history["complaints"]) > 0
         assert len(history["inspections"]) > 0
->>>>>>> 858da7f1acd2b6b7fed6a35cd0b72067f1414670
+

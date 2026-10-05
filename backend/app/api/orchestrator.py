@@ -131,9 +131,11 @@ class ApplicationOrchestrator:
         risk_delta = round(before_response.risk_score - after_response.risk_score, 1)
         priority_delta = round(before_response.priority_score - after_response.priority_score, 1)
 
+        b_lvl = before_response.risk_level.value if hasattr(before_response.risk_level, "value") else before_response.risk_level
+        a_lvl = after_response.risk_level.value if hasattr(after_response.risk_level, "value") else after_response.risk_level
         summary = (
             f"Simulated {request.intervention_type} improved condition from {base_request.condition_score} "
-            f"to {improved_condition}, reducing risk score by {risk_delta} pts ({before_response.risk_level} -> {after_response.risk_level}) "
+            f"to {improved_condition}, reducing risk score by {risk_delta} pts ({b_lvl} -> {a_lvl}) "
             f"and priority score by {priority_delta} pts."
         )
 

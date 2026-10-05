@@ -408,40 +408,82 @@ class DataRepositoryAdapter:
         self.settings = settings
         self.domain = domain_services
         self.ml = ml_adapter
-        self._db_service = None
+        self._asset_service = None
+        self._priority_service = None
         self._checked = False
 
     def _discover_db_service(self):
         if not self._checked:
-            try:
-                mod = importlib.import_module("backend.app.database.database")
-                if hasattr(mod, "get_assets_from_db"):
-                    self._db_service = mod
-            except (ImportError, AttributeError):
-                pass
+            for mod_name in ("app.services.asset_service", "backend.app.services.asset_service"):
+                try:
+                    self._asset_service = importlib.import_module(mod_name)
+                    logger.info("Successfully connected to Member 4 asset_service.")
+                    break
+                except ImportError:
+                    pass
+            for mod_name in ("app.services.priority_service", "backend.app.services.priority_service"):
+                try:
+                    self._priority_service = importlib.import_module(mod_name)
+                    logger.info("Successfully connected to Member 4 priority_service.")
+                    break
+                except ImportError:
+                    pass
             self._checked = True
 
     def _enrich_asset(self, raw_asset: Dict[str, Any]) -> Dict[str, Any]:
         """Calculates decision scores for an asset record."""
         ml_res = self.ml.predict(raw_asset)
-        risk_score = ml_res["risk_score"]
-        risk_level = ml_res["risk_level"]
-        urgency_score = self.domain.calculate_urgency(raw_asset)
-        impact_score = self.domain.calculate_impact(raw_asset)
-        priority_score = self.domain.calculate_priority(risk_score, urgency_score, impact_score)
-        reasons = self.domain.generate_reasons(raw_asset, risk_score)
-        action = self.domain.get_recommended_action(risk_level, priority_score)
+        risk_score = raw_asset.get("risk_score") if raw_asset.get("risk_score") is not None else ml_res["risk_score"]
+        risk_level = raw_asset.get("risk_level") or ml_res["risk_level"]
+        urgency_score = raw_asset.get("urgency_score") if raw_asset.get("urgency_score") is not None else self.domain.calculate_urgency(raw_asset)
+        impact_score = raw_asset.get("impact_score") if raw_asset.get("impact_score") is not None else self.domain.calculate_impact(raw_asset)
+        priority_score = raw_asset.get("priority_score") if raw_asset.get("priority_score") is not None else self.domain.calculate_priority(risk_score, urgency_score, impact_score)
+        reasons = raw_asset.get("priority_reasons") or raw_asset.get("reasons") or self.domain.generate_reasons(raw_asset, risk_score)
+        action = raw_asset.get("recommended_action") or self.domain.get_recommended_action(risk_level, priority_score)
 
         return {
-            **raw_asset,
-            "risk_score": risk_score,
+            "asset_id": raw_asset["asset_id"],
+            "asset_type": str(raw_asset.get("asset_type", "road")).lower(),
+            "name": raw_asset.get("name") or raw_asset.get("asset_name") or raw_asset["asset_id"],
+            "latitude": float(raw_asset.get("latitude", 0.0)),
+            "longitude": float(raw_asset.get("longitude", 0.0)),
+            "age_years": float(raw_asset.get("age_years", 0.0)),
+            "condition_score": float(raw_asset.get("condition_score", 50.0)),
+            "criticality": str(raw_asset.get("criticality", "MEDIUM")).upper(),
+            "status": str(raw_asset.get("status", "ACTIVE")).upper(),
+            "risk_score": float(risk_score),
             "risk_level": risk_level,
-            "urgency_score": urgency_score,
-            "impact_score": impact_score,
-            "priority_score": priority_score,
+            "urgency_score": float(urgency_score),
+            "impact_score": float(impact_score),
+            "priority_score": float(priority_score),
             "reasons": reasons,
             "recommended_action": action,
+            "last_inspected": raw_asset.get("last_inspected"),
+            "zone": raw_asset.get("zone"),
         }
+
+    def _get_combined_assets(self) -> List[Dict[str, Any]]:
+        self._discover_db_service()
+        combined: List[Dict[str, Any]] = []
+        seen_ids = set()
+
+        if self._asset_service and hasattr(self._asset_service, "get_all_assets"):
+            try:
+                db_assets = self._asset_service.get_all_assets()
+                for a in db_assets:
+                    enriched = self._enrich_asset(a)
+                    combined.append(enriched)
+                    seen_ids.add(enriched["asset_id"].upper())
+            except Exception as e:
+                logger.warning(f"Could not load assets from DB service: {e}")
+
+        # Add seed assets that are not already present in DB
+        for s in SEED_ASSETS:
+            if s["asset_id"].upper() not in seen_ids:
+                combined.append(self._enrich_asset(s))
+                seen_ids.add(s["asset_id"].upper())
+
+        return combined
 
     def list_assets(
         self,
@@ -451,9 +493,9 @@ class DataRepositoryAdapter:
         limit: int = 50,
         offset: int = 0,
     ) -> Tuple[List[Dict[str, Any]], int]:
-        all_enriched = [self._enrich_asset(a) for a in SEED_ASSETS]
+        all_assets = self._get_combined_assets()
 
-        filtered = all_enriched
+        filtered = all_assets
         if asset_type:
             filtered = [a for a in filtered if a.get("asset_type") == asset_type.lower()]
         if risk_level:
@@ -466,6 +508,15 @@ class DataRepositoryAdapter:
         return paginated, total
 
     def get_asset_by_id(self, asset_id: str) -> Optional[Dict[str, Any]]:
+        self._discover_db_service()
+        if self._asset_service and hasattr(self._asset_service, "get_asset_by_id"):
+            try:
+                raw = self._asset_service.get_asset_by_id(asset_id)
+                if raw:
+                    return self._enrich_asset(raw)
+            except Exception as e:
+                logger.warning(f"DB lookup failed for asset {asset_id}: {e}")
+
         for raw in SEED_ASSETS:
             if raw["asset_id"].upper() == asset_id.upper():
                 return self._enrich_asset(raw)
@@ -476,6 +527,30 @@ class DataRepositoryAdapter:
         asset = self.get_asset_by_id(asset_id)
         if not asset:
             return None
+
+        self._discover_db_service()
+        if self._asset_service and hasattr(self._asset_service, "get_asset_history"):
+            try:
+                hist = self._asset_service.get_asset_history(asset_id)
+                if hist and (hist.get("maintenance_records") or hist.get("complaints") or hist.get("inspections")):
+                    # Normalize maintenance_records date field
+                    maint_norm = []
+                    for m in hist.get("maintenance_records", []):
+                        m_copy = dict(m)
+                        if "maintenance_date" in m_copy and "date" not in m_copy:
+                            m_copy["date"] = m_copy["maintenance_date"]
+                        if "downtime_days" in m_copy and "downtime_hours" not in m_copy:
+                            m_copy["downtime_hours"] = float(m_copy["downtime_days"] or 0) * 24.0
+                        maint_norm.append(m_copy)
+
+                    return {
+                        "asset_id": asset_id,
+                        "maintenance_records": maint_norm,
+                        "complaints": hist.get("complaints", []),
+                        "inspections": hist.get("inspections", []),
+                    }
+            except Exception as e:
+                logger.warning(f"DB history lookup failed for {asset_id}: {e}")
 
         history = SEED_HISTORY.get(asset_id.upper(), {
             "maintenance_records": [],
@@ -491,25 +566,24 @@ class DataRepositoryAdapter:
         }
 
     def get_dashboard_metrics(self) -> Dict[str, Any]:
-        all_enriched = [self._enrich_asset(a) for a in SEED_ASSETS]
-        total = len(all_enriched)
+        all_assets = self._get_combined_assets()
+        total = len(all_assets)
 
-        critical_count = sum(1 for a in all_enriched if a.get("risk_level") == "CRITICAL")
-        high_count = sum(1 for a in all_enriched if a.get("risk_level") == "HIGH")
-        medium_count = sum(1 for a in all_enriched if a.get("risk_level") == "MEDIUM")
-        low_count = sum(1 for a in all_enriched if a.get("risk_level") == "LOW")
-        under_maint_count = sum(1 for a in all_enriched if a.get("status") == "UNDER_MAINTENANCE")
+        critical_count = sum(1 for a in all_assets if a.get("risk_level") == "CRITICAL")
+        high_count = sum(1 for a in all_assets if a.get("risk_level") == "HIGH")
+        medium_count = sum(1 for a in all_assets if a.get("risk_level") == "MEDIUM")
+        low_count = sum(1 for a in all_assets if a.get("risk_level") == "LOW")
+        under_maint_count = sum(1 for a in all_assets if a.get("status") == "UNDER_MAINTENANCE")
 
-        avg_cond = round(sum(a.get("condition_score", 0.0) for a in all_enriched) / total, 1) if total > 0 else 0.0
-        avg_pri = round(sum(a.get("priority_score", 0.0) for a in all_enriched) / total, 1) if total > 0 else 0.0
+        avg_cond = round(sum(a.get("condition_score", 0.0) for a in all_assets) / total, 1) if total > 0 else 0.0
+        avg_pri = round(sum(a.get("priority_score", 0.0) for a in all_assets) / total, 1) if total > 0 else 0.0
 
         type_breakdown: Dict[str, int] = {}
-        for a in all_enriched:
+        for a in all_assets:
             t = a.get("asset_type", "road")
             type_breakdown[t] = type_breakdown.get(t, 0) + 1
 
-        # Sorted by priority score descending
-        sorted_assets = sorted(all_enriched, key=lambda x: x.get("priority_score", 0.0), reverse=True)
+        sorted_assets = sorted(all_assets, key=lambda x: x.get("priority_score", 0.0), reverse=True)
         top_asset = sorted_assets[0] if sorted_assets else None
 
         return {
@@ -532,9 +606,8 @@ class DataRepositoryAdapter:
         }
 
     def get_priorities_queue(self, limit: int = 50, offset: int = 0) -> Tuple[List[Dict[str, Any]], int]:
-        all_enriched = [self._enrich_asset(a) for a in SEED_ASSETS]
-        # Rank assets by priority score descending
-        sorted_assets = sorted(all_enriched, key=lambda x: x.get("priority_score", 0.0), reverse=True)
+        all_assets = self._get_combined_assets()
+        sorted_assets = sorted(all_assets, key=lambda x: x.get("priority_score", 0.0), reverse=True)
         total = len(sorted_assets)
 
         paginated = sorted_assets[offset : offset + limit]
