@@ -1,0 +1,34 @@
+{
+  "metrics": {
+    "accuracy": 0.9267,
+    "precision": 0.9048,
+    "recall": 0.9194,
+    "f1_score": 0.912,
+    "roc_auc": 0.9825
+  },
+  "feature_importances": {
+    "condition_score": 0.459,
+    "age_years": 0.284,
+    "previous_repairs": 0.0818,
+    "complaints_30d": 0.0589,
+    "pothole_count": 0.0368,
+    "traffic_level": 0.0257,
+    "rainfall_30d_mm": 0.0205,
+    "days_since_last_repair": 0.0167,
+    "overdue_inspection": 0.0102,
+    "surface_type": 0.0064
+  },
+  "features": [
+    "age_years",
+    "surface_type",
+    "traffic_level",
+    "condition_score",
+    "pothole_count",
+    "previous_repairs",
+    "days_since_last_repair",
+    "rainfall_30d_mm",
+    "complaints_30d",
+    "overdue_inspection"
+  ],
+  "model_version": "rf_v1.0"
+}

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "OSM-001",
+    "name": "MG Road",
+    "latitude": 12.976608,
+    "longitude": 77.5996798,
+    "osm_place_id": 252458209
+  },
+  {
+    "id": "OSM-002",
+    "name": "Outer Ring Road",
+    "latitude": 12.9104157,
+    "longitude": 77.6001661,
+    "osm_place_id": 252419092
+  },
+  {
+    "id": "OSM-003",
+    "name": "Hosur Road",
+    "latitude": 12.9313152,
+    "longitude": 77.6139514,
+    "osm_place_id": 251793836
+  },
+  {
+    "id": "OSM-004",
+    "name": "Old Airport Road",
+    "latitude": 12.9590831,
+    "longitude": 77.6584678,
+    "osm_place_id": 250511471
+  },
+  {
+    "id": "OSM-005",
+    "name": "Bannerghatta Road",
+    "latitude": 12.8719119,
+    "longitude": 77.593896,
+    "osm_place_id": 251580872
+  },
+  {
+    "id": "OSM-006",
+    "name": "Brigade Road",
+    "latitude": 12.9698993,
+    "longitude": 77.606571,
+    "osm_place_id": 252838469
+  },
+  {
+    "id": "OSM-007",
+    "name": "Sarjapur Road",
+    "latitude": 12.9239942,
+    "longitude": 77.6530304,
+    "osm_place_id": 252891893
+  },
+  {
+    "id": "OSM-008",
+    "name": "Kanakapura Road",
+    "latitude": 12.8559023,
+    "longitude": 77.5258041,
+    "osm_place_id": 252386147
+  },
+  {
+    "id": "OSM-009",
+    "name": "Whitefield Main Road",
+    "latitude": 12.9730787,
+    "longitude": 77.7503273,
+    "osm_place_id": 254606956
+  },
+  {
+    "id": "OSM-010",
+    "name": "Residency Road",
+    "latitude": 12.9666878,
+    "longitude": 77.5987471,
+    "osm_place_id": 252142562
+  },
+  {
+    "id": "OSM-011",
+    "name": "Bellary Road",
+    "latitude": 13.0507226,
+    "longitude": 77.5930112,
+    "osm_place_id": 252446491
+  }
+]
