@@ -427,8 +427,8 @@ Follow the steps below to run CivicFlow locally.
 
 Make sure the following are installed:
 
-- **Python 3**
-- **Node.js + npm**
+- **Python 3.12+**
+- **Node.js 18+ + npm**
 - **Git**
 
 Verify the installations:
@@ -445,71 +445,58 @@ git --version
 # Step 1: Clone the Repository
 
 ```bash
-git clone <YOUR_REPOSITORY_URL>
-cd predictive-maintenance
+git clone https://github.com/divyansiu/CivicFlow.git
+cd CivicFlow
 ```
+
+> **Important:** All backend commands must be run from the **project root** (`CivicFlow/`), not from inside the `backend/` folder.
 
 ---
 
 # Step 2: Backend Setup
 
-## 1. Navigate to the backend directory
+## 1. Install Python dependencies
+
+From the **project root**:
 
 ```bash
-cd backend
+pip install -r backend/requirements.txt
 ```
 
-## 2. Create and activate a virtual environment
+### Optional: Use a virtual environment
 
-### Windows PowerShell
+#### Windows PowerShell
 
 ```powershell
 python -m venv venv
 .\venv\Scripts\Activate.ps1
+pip install -r backend/requirements.txt
 ```
 
 If PowerShell blocks activation:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-```
-
-Then activate again:
-
-```powershell
 .\venv\Scripts\Activate.ps1
 ```
 
-### macOS / Linux
+#### macOS / Linux
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
+pip install -r backend/requirements.txt
 ```
 
-## 3. Install Python dependencies
+## 2. Start the FastAPI backend
+
+From the **project root** (`CivicFlow/`):
 
 ```bash
-pip install -r requirements.txt
+python -m uvicorn backend.app.main:app --port 8000 --reload
 ```
 
-## 4. Initialize and seed the SQLite database
-
-The SQLite database initializes and can seed the application data during startup.
-
-You can also initialize it manually:
-
-```bash
-python -c "from app.database import init_db; init_db()"
-```
-
-The current seed data contains **60 Bengaluru road assets and operational logs**.
-
-## 5. Start the FastAPI backend
-
-```bash
-uvicorn app.main:app --reload --port 8000
-```
+> ⚠️ **Do NOT run** `uvicorn app.main:app` from inside the `backend/` folder — this will fail. Always use `python -m uvicorn backend.app.main:app` from the project root.
 
 Backend API:
 
@@ -517,11 +504,13 @@ Backend API:
 http://localhost:8000
 ```
 
-Swagger UI:
+Swagger UI (interactive API docs):
 
 ```text
 http://localhost:8000/docs
 ```
+
+The SQLite database (`backend/data/civicflow.db`) is **pre-seeded** with 60 Bengaluru road assets and 136 maintenance records — no manual database setup required.
 
 ---
 
@@ -535,7 +524,7 @@ Open a **new terminal window or tab**.
 cd frontend
 ```
 
-## 2. Install dependencies
+## 2. Install dependencies (first time only)
 
 ```bash
 npm install
@@ -553,32 +542,22 @@ Frontend application:
 http://localhost:5173
 ```
 
-The frontend communicates with the FastAPI backend through the application's API endpoints.
+The frontend automatically proxies all `/api` requests to the FastAPI backend at `http://localhost:8000`.
 
 ---
 
 # Step 4: Run the Complete System
 
-Run both servers.
+You need **two terminals** open simultaneously.
 
-### Terminal 1 — Backend
-
-```bash
-cd backend
-```
-
-Activate the environment:
-
-**Windows:**
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-Then:
+### Terminal 1 — Backend (from project root)
 
 ```bash
-uvicorn app.main:app --reload --port 8000
+# Windows
+python -m uvicorn backend.app.main:app --port 8000 --reload
+
+# macOS / Linux
+python3 -m uvicorn backend.app.main:app --port 8000 --reload
 ```
 
 ### Terminal 2 — Frontend
@@ -631,8 +610,7 @@ React Dashboard / GIS / Priority Queue
 To verify backend scoring engines, database persistence, and integration tests:
 
 ```bash
-cd backend
-python -m pytest tests -v
+python -m pytest backend/tests -v
 ```
 
 A successful test run helps verify that the main backend components are working together correctly.
